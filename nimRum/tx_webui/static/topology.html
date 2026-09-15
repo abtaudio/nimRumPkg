@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nimRum — Topology</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/topology.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="site-title">nimRum</a>
+        <nav class="view-nav">
+            <a href="/" class="active">Topology</a>
+            <a href="/levels">Levels</a>
+            <a href="/list">Status</a>
+            <a href="/channelmap">Channel Map</a>
+            <a href="/calibration">EQ Calibration</a>
+            <a href="/system">System</a>
+            <a href="/config">Config</a>
+            <a href="/network">Network</a>
+            <a href="/about">About</a>
+        </nav>
+    </header>
+
+    <section id="sources-bar" class="topo-card">
+        <h2>Sources</h2>
+        <div id="source-list"></div>
+    </section>
+
+    <section id="topo-volume" class="topo-card">
+        <h2>Main Volume</h2>
+        <div class="slider-row">
+            <input type="range" id="topo-vol-slider" min="0" max="127" value="0">
+            <span class="slider-val" id="topo-vol-val">0</span>
+            <span class="slider-db" id="topo-vol-db">Mute</span>
+        </div>
+    </section>
+
+    <section id="topology-container" class="topo-card">
+        <canvas id="topo-canvas"></canvas>
+        <div id="topo-buttons">
+            <a href="#" id="store-groups-btn" title="Store current groups as default">💾 Store Groups</a>
+            <a href="#" id="reset-btn" title="Restore stored groups">⟳ Restore Groups</a>
+        </div>
+    </section>
+
+    <section id="topo-toolbar" class="topo-card">
+        <div class="topo-legend">
+            <span class="legend-label"><b>Inner:</b> Sync</span>
+            <span class="legend-item"><span class="dot" style="background:#94a3b8"></span>Waiting</span>
+            <span class="legend-item"><span class="dot" style="background:#ef4444"></span>Collecting</span>
+            <span class="legend-item"><span class="dot" style="background:#3b82f6"></span>Finetuning</span>
+            <span class="legend-item"><span class="dot" style="background:#22c55e"></span>Locked/+</span>
+            <span class="legend-item"><span class="dot" style="background:#475569"></span>Lost/No contact</span>
+        </div>
+        <!-- Filled by topology.js from rxstate's NET_RING_COLORS/NAMES. It was four
+             hardcoded colours, which went stale the moment the scheme changed: the
+             canvas rings drew amber for Good while this legend still showed light
+             green. Same defect as the Status page had, in a second file - so it is
+             generated here too rather than duplicated. -->
+        <div class="topo-legend" id="net-legend">
+            <span class="legend-label"><b>Outer:</b> Network</span>
+        </div>
+    </section>
+
+    <script src="/static/rxstate.js"></script>
+    <script src="/static/topology.js"></script>
+</body>
+</html>

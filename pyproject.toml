@@ -1,0 +1,73 @@
+# https://hatch.pypa.io/
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nimRum"
+dynamic = ["version"]
+description = "Nimble Rumble, a library to play wireless(WiFi) sound in perfect synch, based on nimRumLib from AbtAudio"
+readme = "README.md"
+# Two licences travel in this wheel, so both files must land in it. The metadata
+# `license` field can name only one, and it names the one that covers the package's own
+# code; the proprietary terms for the two pre-built nimRumLib binaries are shipped
+# alongside via license-files and mapped artefact-by-artefact in README.md. A recipient
+# used to get four .so and a single GPL-3.0 text, with no way to tell that two of them
+# were not GPL-3.0.
+license = {file = "LICENSE.txt"}
+license-files = ["LICENSE.txt", "LICENSE-nimRumLib.txt"]
+
+keywords=["abtaudio", "about time audio", "wireless audio", "synchronization"]
+authors = [ { name="AbtAudio AB", email="evaluate@abtaudio.tech" } ]
+maintainers = [ { name="AbtAudio AB", email="evaluate@abtaudio.tech" } ]
+
+requires-python = ">=3.9"
+classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Operating System :: POSIX",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: C",
+        "Topic :: Multimedia :: Sound/Audio",
+        "Topic :: Software Development :: Embedded Systems",
+]
+dependencies = [
+    "PyYAML",
+    "RPi.GPIO",
+    "gpiozero",
+    "lirc",
+    "netifaces",
+    "wavio",
+    "sounddevice",
+    "numpy",
+    "flask",
+]
+
+[project.urls]
+"Homepage" = "https://www.abtaudio.tech/"
+
+[tool.hatch.version]
+path = "VERSION"
+pattern = "(?P<version>.+)"
+
+[tool.hatch.build.targets.wheel]
+artifacts = [ 
+    "nimRum/**/*.py", 
+    "nimRum/**/*.md", 
+    "nimRum/*.so", 
+    "nimRum/*.yaml", 
+    "nimRum/tx_webui/static/*",
+ ]
+
+# Calls hatch_build.py
+[tool.hatch.build.targets.wheel.hooks.custom]
+
+
+[project.scripts]
+runNimRumRx = "nimRum.rx.runNimRumRx:main"
+runNimRumTx = "nimRum.tx.runNimRumTx:main"
+runNimRumMeas = "nimRum.meas.nimRumMeasure:main"
+runNimRumAudioSource = "nimRum.audio_source.run_audio_source:main"
+runNimRumToneGen = "nimRum.audio_source.run_tonegen:main"
+runNimRumWebUI = "nimRum.tx_webui.nimRumWebUI:main"

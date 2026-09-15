@@ -1,0 +1,39 @@
+COPYRIGHT (c) 2021-2026, AbtAudio AB, All rights reserved.
+
+TERMS FOR THE nimRumLib BINARIES
+================================
+
+These terms cover the pre-built nimRumLib shared libraries distributed with the
+nimRum package:
+
+    nimRum/libNimRumTx_ct.so
+    nimRum/libNimRumRx_ct.so
+
+They do NOT cover the rest of the package. See LICENSE.txt and the "License"
+section of README.md for what covers what.
+
+----------------------------------------------------------------------------
+
+The copyright to the computer program(s) herein is the property of AbtAudio AB.
+The computer programs(s) may implement properties protected by patent(s) such
+as arising from SE544478C2, US12034828B2 or WO2021/220149.
+
+Redistribution in any form, with or without modification, is only permitted
+with the written permission from AbtAudio AB.
+
+The computer program(s) may be used for private purposes and for evaluation
+purposes.
+
+The computer program(s) may NOT be used for any commercial purposes without
+the written permission from AbtAudio AB.
+
+The computer program(s) are provided as is, without any warranties, but
+feedback in form of suggestions for improvements is encouraged.
+
+----------------------------------------------------------------------------
+
+Commercial licensing enquiries: https://www.abtaudio.tech
+
+These are the same terms the libraries state in their own startup banner and in
+the header of every nimRumLib source file. This file exists so that a recipient
+of a built package can read them without having the sources.

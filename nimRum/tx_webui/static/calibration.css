@@ -1,0 +1,425 @@
+.cal-card {
+    max-width: 900px;
+    margin: 0 auto 1rem;
+    padding: 1rem 1.5rem;
+    background: var(--card);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.cal-card h2 {
+    margin-bottom: 0.75rem;
+}
+
+/* Banner card — heading is the whole content, so no bottom margin. */
+#cal-experimental h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.cal-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-left: 0.5rem;
+}
+
+.cal-hint code {
+    font-size: 0.7rem;
+}
+
+.cal-deploy-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cal-separator {
+    border: none;
+    border-top: 2px solid rgba(255,255,255,0.15);
+    margin: 0.75rem 0;
+}
+
+.cal-intro {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.5;
+    opacity: 0.85;
+}
+
+.cal-intro code {
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.2rem;
+}
+
+#measure-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#overlay-content {
+    text-align: center;
+    padding: 2rem 3rem;
+    background: var(--card);
+    border-radius: 0.75rem;
+    border: 1px solid var(--muted);
+}
+
+#overlay-status {
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    min-width: 250px;
+}
+
+#overlay-cancel-btn {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--poor);
+    border-radius: 0.4rem;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+#overlay-cancel-btn:hover {
+    background: var(--poor);
+    color: #fff;
+}
+
+.cal-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.cal-row label {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+#speaker-select {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    border-radius: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+#speaker-type-select {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    border-radius: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+#mic-cal-select {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    border-radius: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+#import-preview-btn {
+    /* Secondary style */
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--muted);
+}
+
+#import-preview-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+#measure-btn:disabled,
+#verify-btn:disabled,
+#import-preview-btn:disabled,
+#deploy-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.cal-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.cal-status.active {
+    color: var(--good);
+}
+
+.cal-status.error {
+    color: var(--poor);
+}
+
+/* Deployed, but with a caveat worth reading — e.g. a clamped volCal, which
+   means the measurement was out of range rather than the speaker needing it. */
+.cal-status.warn {
+    color: #f59e0b;
+}
+
+#cal-chart {
+    margin-bottom: 1rem;
+    overflow-x: auto;
+}
+
+#freq-canvas {
+    display: block;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+}
+
+#cal-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+#cal-bands h2 {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+
+#bands-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.band-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    border-left: 3px solid var(--muted);
+}
+
+.band-card .band-type {
+    font-weight: 600;
+    color: var(--text);
+}
+
+@media (max-width: 480px) {
+    .cal-card {
+        padding: 0.75rem;
+    }
+    #freq-canvas {
+        max-width: 100%;
+    }
+    #bands-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+#cal-import {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border, #333);
+    padding-top: 1rem;
+}
+
+#cal-import h2 {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+
+.cal-import-row {
+    align-items: flex-start;
+}
+
+.cal-import-row label {
+    padding-top: 0.4rem;
+}
+
+.import-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+#import-textarea {
+    flex: 1;
+    font-family: monospace;
+    font-size: 0.75rem;
+    background: var(--card);
+    color: var(--text, #eee);
+    border: 1px solid var(--border, #333);
+    border-radius: 0.4rem;
+    padding: 0.4rem;
+    resize: vertical;
+    min-width: 200px;
+}
+
+#import-status {
+    font-size: 0.75rem;
+}
+
+#cal-fleet h2 {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+
+#cal-fleet .form-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+#refresh-fleet-cal-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--muted);
+}
+
+#refresh-fleet-cal-btn:hover {
+    background: var(--good);
+    color: #000;
+    border-color: var(--good);
+}
+
+#fleet-cal-cache-status {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+#fleet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+#fleet-table th {
+    text-align: left;
+    color: var(--muted);
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--muted);
+}
+
+#fleet-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text);
+}
+
+#fleet-table .eq-status {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.3rem;
+}
+
+#fleet-table .eq-active {
+    background: rgba(34,197,94,0.2);
+    color: var(--good);
+}
+
+#fleet-table .eq-disabled {
+    background: rgba(239,68,68,0.15);
+    color: var(--poor);
+}
+
+#fleet-table .eq-none {
+    color: var(--muted);
+}
+
+#fleet-table .eq-clickable {
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+#fleet-table .eq-clickable:hover {
+    opacity: 0.7;
+}
+
+#fleet-table button {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    border-radius: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+    margin-right: 0.3rem;
+}
+
+#fleet-table .fleet-type {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    border-radius: 0.3rem;
+    padding: 0.15rem 0.3rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+#fleet-table button:hover {
+    background: var(--good);
+    color: #000;
+    border-color: var(--good);
+}
+
+#fleet-table button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+#fleet-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#fleet-actions button {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    border-radius: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+#fleet-actions button:hover:not(:disabled) {
+    background: var(--good);
+    color: #000;
+    border-color: var(--good);
+}
+
+#fleet-actions button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+#fleet-status {
+    font-size: 0.8rem;
+    color: var(--muted);
+}

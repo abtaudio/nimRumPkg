@@ -1,0 +1,208 @@
+#levels-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+#save-btn {
+    /* Inherits primary style from style.css */
+}
+
+#save-btn:hover {
+    opacity: 0.85;
+}
+
+.status-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.status-text.success {
+    color: var(--good);
+}
+
+.status-text.error {
+    color: var(--poor);
+}
+
+/* Main volume section */
+.main-volume-section {
+    background: var(--card);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.main-volume-section h2 {
+    margin-bottom: 0.5rem;
+}
+
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.slider-row label {
+    min-width: 90px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.slider-row input[type="range"] {
+    flex: 1;
+    min-width: 120px;
+}
+
+.slider-val {
+    min-width: 40px;
+    text-align: right;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.slider-db {
+    min-width: 70px;
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+/* A group slider whose members do not share one value: the figure shown is the
+   lowest of them, so it is marked rather than presented as the group's value. */
+.slider-val.mixed,
+.slider-db.mixed {
+    color: var(--marginal);
+}
+
+.mixed-badge {
+    color: var(--marginal);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: help;
+}
+
+/* Group sections */
+.group-section {
+    background: var(--card);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.group-section h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+}
+
+.group-sliders {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* Per-RX trim */
+.rx-trim {
+    margin-top: 0.5rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid rgba(148, 163, 184, 0.2);
+}
+
+.rx-trim-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.rx-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.rx-location {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.cal-badge {
+    font-size: 0.7rem;
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.75rem;
+    margin-left: auto;
+}
+
+/* Range input styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 3px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    border: 2px solid #1d4ed8;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    border: 2px solid #1d4ed8;
+}
+
+/* Larger touch target on mobile */
+@media (pointer: coarse) {
+    input[type="range"]::-webkit-slider-thumb {
+        width: 44px;
+        height: 44px;
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .slider-row {
+        flex-wrap: wrap;
+    }
+    .slider-row label {
+        min-width: 100%;
+        margin-bottom: 0.25rem;
+    }
+    .slider-val, .slider-db {
+        min-width: unset;
+    }
+}
+
+/* Explanatory note under the volume sliders */
+.hint {
+    margin: 6px 0 0 0;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* Startup volume sits below the save button, visually a group of its own */
+.startup-volume-section .hint {
+    margin: 8px 0 0 0;
+}

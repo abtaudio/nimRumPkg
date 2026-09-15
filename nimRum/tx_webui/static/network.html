@@ -1,0 +1,55 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nimRum — Network</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/topology.css">
+    <link rel="stylesheet" href="/static/system.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="site-title">nimRum</a>
+        <nav class="view-nav">
+            <a href="/">Topology</a>
+            <a href="/levels">Levels</a>
+            <a href="/list">Status</a>
+            <a href="/channelmap">Channel Map</a>
+            <a href="/calibration">EQ Calibration</a>
+            <a href="/system">System</a>
+            <a href="/config">Config</a>
+            <a href="/network" class="active">Network</a>
+            <a href="/about">About</a>
+        </nav>
+    </header>
+
+    <section id="network-container">
+        <h2>WiFi link survey</h2>
+        <p class="muted">
+            Reads link speed and RSSI from every SRC and RX over SSH. Safe to
+            run while audio is playing. On demand only — one SSH connection per
+            device, so this is not on a refresh timer.
+            <br>
+            Expect the numbers to move between runs. That is not the tool being
+            imprecise: a healthy link reports the same speed every time, so
+            variation is itself a finding.
+        </p>
+        <div class="form-row">
+            <button id="survey-btn">📶 Run link survey</button>
+            <span id="survey-status" class="status-text"></span>
+        </div>
+        <div id="survey-result"></div>
+
+        <h2>Load test</h2>
+        <p class="muted">
+            Not implemented yet. Will measure throughput, loss under load and
+            airtime share — and needs to stop audio first, so it will sit behind
+            a confirmation.
+        </p>
+    </section>
+
+    <script src="/static/network.js"></script>
+</body>
+</html>

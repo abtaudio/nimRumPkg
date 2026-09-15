@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nimRum — System</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/topology.css">
+    <link rel="stylesheet" href="/static/system.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="site-title">nimRum</a>
+        <nav class="view-nav">
+            <a href="/">Topology</a>
+            <a href="/levels">Levels</a>
+            <a href="/list">Status</a>
+            <a href="/channelmap">Channel Map</a>
+            <a href="/calibration">EQ Calibration</a>
+            <a href="/system" class="active">System</a>
+            <a href="/config">Config</a>
+            <a href="/network">Network</a>
+            <a href="/about">About</a>
+        </nav>
+    </header>
+
+    <section id="tx-update">
+        <h2>TX Software <span id="tx-version" class="version-badge"></span> <span id="pypi-latest" class="version-badge muted"></span></h2>
+        <div class="form-row">
+            <label for="tx-source">Source:</label>
+            <select id="tx-source">
+                <option value="pypi-latest">PyPI (latest)</option>
+                <option value="pypi-version">PyPI (specific version)</option>
+                <option value="upload">Upload .whl file</option>
+            </select>
+        </div>
+        <div id="tx-version-input" class="form-row" style="display:none">
+            <label for="tx-version-field">Version:</label>
+            <input type="text" id="tx-version-field" placeholder="e.g. 1.2.0">
+        </div>
+        <div id="tx-upload-input" class="form-row" style="display:none">
+            <label for="tx-wheel-file">Wheel:</label>
+            <input type="file" id="tx-wheel-file" accept=".whl">
+        </div>
+        <div class="form-row">
+            <button id="tx-update-btn">Update TX</button>
+            <span id="tx-update-status" class="status-text"></span>
+        </div>
+    </section>
+
+    <section id="fleet-update">
+        <h2>Fleet Software Update</h2>
+        <p class="muted">Deploy current TX version to all RX/SRC devices</p>
+        <div class="form-row">
+            <label for="fleet-source">Source:</label>
+            <select id="fleet-source">
+                <option value="same">Same as TX (installed version)</option>
+                <option value="upload">Upload .whl to TX, then deploy</option>
+            </select>
+        </div>
+        <div id="fleet-upload-input" class="form-row" style="display:none">
+            <label for="fleet-wheel-file">Wheel:</label>
+            <input type="file" id="fleet-wheel-file" accept=".whl">
+        </div>
+        <div class="form-row">
+            <button id="fleet-update-btn">Update All RX/SRC</button>
+            <span id="fleet-update-status" class="status-text"></span>
+        </div>
+        <div id="fleet-progress" style="display:none">
+            <div id="fleet-progress-bar">
+                <div id="fleet-progress-fill"></div>
+            </div>
+            <div id="fleet-results"></div>
+        </div>
+    </section>
+
+    <section id="fleet-actions">
+        <h2>Fleet Actions</h2>
+        <div class="form-row">
+            <button id="restart-fleet-btn" class="btn-secondary">Restart All RX</button>
+            <button id="reboot-fleet-btn" class="btn-danger">Reboot All RX</button>
+            <button id="restart-tx-btn" class="btn-secondary">Restart TX</button>
+            <button id="reboot-tx-btn" class="btn-danger">Reboot TX</button>
+        </div>
+    </section>
+
+    <section id="fleet-info">
+        <h2>Fleet Device Info</h2>
+        <div class="form-row">
+            <button id="refresh-fleet-info-btn" class="btn-secondary">Refresh</button>
+            <span id="fleet-info-status" class="status-text"></span>
+        </div>
+        <div id="fleet-info-table-wrap">
+            <table id="fleet-info-table" class="fleet-table">
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Platform</th>
+                        <th>Version</th>
+                        <th>Arch</th>
+                        <th>OS</th>
+                        <th>Kernel</th>
+                        <th>WiFi</th>
+                        <th>DAC/HAT</th>
+                        <th>Uptime</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <div id="confirm-overlay" style="display:none">
+        <div id="confirm-box">
+            <p id="confirm-text"></p>
+            <div class="confirm-buttons">
+                <button id="confirm-yes" class="btn-danger">Confirm</button>
+                <button id="confirm-no">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="updating-overlay" style="display:none">
+        <div id="updating-box">
+            <p>Updating TX... reconnecting in <span id="reconnect-countdown">10</span>s</p>
+        </div>
+    </div>
+
+    <script src="/static/system.js"></script>
+</body>
+</html>

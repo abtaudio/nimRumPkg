@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nimRum — About</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/topology.css">
+    <style>
+        .about-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            text-align: center;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .about-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        .about-subtitle {
+            font-size: 1rem;
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+        .about-versions {
+            background: var(--card);
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+        .about-versions table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .about-versions td {
+            padding: 0.4rem 0;
+        }
+        .about-versions td:first-child {
+            color: var(--muted);
+            text-align: left;
+        }
+        .about-versions td:last-child {
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+        .about-powered {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        .about-powered a {
+            line-height: 0;
+        }
+        .about-powered-logo {
+            height: 80px;
+            opacity: 0.85;
+            transition: opacity 0.2s;
+        }
+        .about-powered-logo:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="site-title">nimRum</a>
+        <nav class="view-nav">
+            <a href="/">Topology</a>
+            <a href="/levels">Levels</a>
+            <a href="/list">Status</a>
+            <a href="/channelmap">Channel Map</a>
+            <a href="/calibration">EQ Calibration</a>
+            <a href="/system">System</a>
+            <a href="/config">Config</a>
+            <a href="/network">Network</a>
+            <a href="/about" class="active">About</a>
+        </nav>
+    </header>
+
+    <section class="about-page">
+        <div class="about-title">nimRum</div>
+        <div class="about-subtitle">Software solution for transmission and synchronization of wireless audio</div>
+
+        <div class="about-versions">
+            <table>
+                <tr>
+                    <td>nimRumPkg</td>
+                    <td id="pkg-version">—</td>
+                </tr>
+                <tr>
+                    <td>nimRumLib</td>
+                    <td id="lib-version">—</td>
+                </tr>
+                <!-- Only filled for an INTERNAL build. A public build says nothing here,
+                     so the marker's presence is the signal and its absence is the normal
+                     published state - there is nothing to explain to a user who has one. -->
+                <tr id="build-row" style="display:none">
+                    <td>Build</td>
+                    <td id="build-kind"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="about-powered">
+            <span>Powered by</span>
+            <a href="https://www.abtaudio.tech" target="_blank" rel="noopener">
+                <img src="/static/logo-full.png" alt="About Time Audio" class="about-powered-logo">
+            </a>
+        </div>
+    </section>
+
+    <script>
+        fetch("/api/system/tx-version")
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById("pkg-version").textContent = data.version || "—";
+                document.getElementById("lib-version").textContent = data.libVersion || "—";
+            })
+            .catch(() => {});
+
+        /* Say so when this is NOT the published build.
+         *
+         * The whole point of the public build is that it is the default reading of a
+         * running system, so the interesting case - and the one that needs a label - is
+         * the internal one. Without it there is no way to tell from the UI which build
+         * a device is carrying, which matters both before publishing (did the flag
+         * actually take?) and afterwards (is this device running something we shipped?).
+         *
+         * fullDiagnostics comes from the C library via TX, so it reports what the
+         * compiled artefact does rather than what a config claims.
+         */
+        fetch("/api/status")
+            .then(r => r.json())
+            .then(data => {
+                if (data.fullDiagnostics === true) {
+                    document.getElementById("build-row").style.display = "";
+                    document.getElementById("build-kind").innerHTML =
+                        '<span style="color:#f59e0b;font-weight:600">Internal</span>'
+                        + '<span style="color:var(--muted);font-size:0.8em">'
+                        + ' — full diagnostics, not for publishing</span>';
+                }
+            })
+            .catch(() => {});
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nimRum — Levels</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/topology.css">
+    <link rel="stylesheet" href="/static/levels.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="site-title">nimRum</a>
+        <nav class="view-nav">
+            <a href="/">Topology</a>
+            <a href="/levels" class="active">Levels</a>
+            <a href="/list">Status</a>
+            <a href="/channelmap">Channel Map</a>
+            <a href="/calibration">EQ Calibration</a>
+            <a href="/system">System</a>
+            <a href="/config">Config</a>
+            <a href="/network">Network</a>
+            <a href="/about">About</a>
+        </nav>
+    </header>
+
+    <section id="levels-container">
+        <div id="main-volume-mount"></div>
+        <div id="levels-toolbar">
+            <button id="save-btn">💾 Save to config</button>
+            <span id="save-status" class="status-text"></span>
+        </div>
+        <div id="startup-volume-mount"></div>
+        <div id="levels-content"></div>
+    </section>
+
+    <script src="/static/levels.js"></script>
+</body>
+</html>

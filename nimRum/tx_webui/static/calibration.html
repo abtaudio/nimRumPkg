@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nimRum — EQ Calibration</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/topology.css">
+    <link rel="stylesheet" href="/static/calibration.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="site-title">nimRum</a>
+        <nav class="view-nav">
+            <a href="/">Topology</a>
+            <a href="/levels">Levels</a>
+            <a href="/list">Status</a>
+            <a href="/channelmap">Channel Map</a>
+            <a href="/calibration" class="active">EQ Calibration</a>
+            <a href="/system">System</a>
+            <a href="/config">Config</a>
+            <a href="/network">Network</a>
+            <a href="/about">About</a>
+        </nav>
+    </header>
+
+    <section id="cal-experimental" class="cal-card">
+        <h2>Experimental</h2>
+    </section>
+
+    <section id="cal-controls" class="cal-card">
+        <h2>Mic Calibration</h2>
+        <p class="cal-intro">
+            Measures each speaker's frequency response with a chirp sweep via UMIK mic.<br>
+            Auto-fits EQ bands (deployed to RX as <code>eq_config.yaml</code>) and
+            volume offset (<code>volCal</code> in <code>txConfig.yaml</code>).
+        </p>
+        <div class="cal-row">
+            <label for="mic-cal-select">Mic cal.:</label>
+            <select id="mic-cal-select">
+                <option value="">— none —</option>
+            </select>
+            <span class="cal-hint">Place .txt files in <code>calibration/mic/</code> on TX</span>
+        </div>
+    </section>
+
+    <section id="cal-measure" class="cal-card">
+        <h2>Speaker Measurement</h2>
+        <div class="cal-row">
+            <label for="speaker-select">Speaker:</label>
+            <select id="speaker-select">
+                <option value="">— select —</option>
+            </select>
+            <select id="speaker-type-select">
+                <option value="full-range">Full-range</option>
+                <option value="subwoofer">Subwoofer</option>
+            </select>
+            <button id="measure-btn" disabled>Calibrate</button>
+            <button id="verify-btn" disabled>Verify</button>
+        </div>
+        <div class="cal-row">
+            <span id="cal-status" class="cal-status">Idle</span>
+        </div>
+        <div class="cal-row cal-import-row">
+            <label>Import:</label>
+            <div class="import-col">
+                <textarea id="import-textarea" rows="3" placeholder="Peaking, 250, -4.2, 2.1&#10;Highshelf, 8000, -2.0, 0.7&#10;Raw, b0, b1, b2, a1, a2"></textarea>
+                <div class="cal-row">
+                    <button id="import-preview-btn">Preview</button>
+                    <span id="import-status" class="cal-status"></span>
+                </div>
+            </div>
+        </div>
+        <div class="cal-deploy-row">
+            <button id="deploy-btn" disabled>Deploy</button>
+        </div>
+    </section>
+
+    <div id="measure-overlay" style="display:none">
+        <div id="overlay-content">
+            <div id="overlay-status">Measuring...</div>
+            <button id="overlay-cancel-btn">Cancel</button>
+        </div>
+    </div>
+
+    <section id="cal-results" class="cal-card">
+        <div id="cal-chart">
+            <canvas id="freq-canvas" width="800" height="360"></canvas>
+        </div>
+        <h2>EQ Bands</h2>
+        <div id="bands-list"></div>
+    </section>
+
+    <section id="cal-fleet" class="cal-card">
+        <h2>Fleet Calibration</h2>
+        <div class="form-row">
+            <button id="refresh-fleet-cal-btn" class="btn-secondary">Refresh</button>
+            <span id="fleet-cal-cache-status" class="status-text"></span>
+        </div>
+        <table id="fleet-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="fleet-select-all" title="Select all"></th>
+                    <th>Speaker</th>
+                    <th>Location</th>
+                    <th>Type</th>
+                    <th>Profile</th>
+                    <th>EQ Status</th>
+                    <th>CPU</th>
+                </tr>
+            </thead>
+            <tbody id="fleet-body"></tbody>
+        </table>
+        <div id="fleet-actions">
+            <button id="fleet-measure-btn" disabled>Run Calibrate</button>
+            <button id="fleet-measure-deploy-btn" disabled>Run Calibrate &amp; Deploy</button>
+            <span id="fleet-status"></span>
+        </div>
+    </section>
+
+    <script src="/static/calibration.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+nimRumTXConfig:
+  startupVolume: 20 # Volume TX comes up with after a restart. 0..127
+  latency_us: 100000 # [us] Delay from TX to RX(client) output
+  default_layout: stereo # Fallback for unknown SRC layout announcements
+
+  logEnable: 0
+  #logPath: /root/nimRum
+
+  #remoteModel: LG_AKB72915207
+  #keyUp: KEY_VOLUMEUP
+  #keyDown: KEY_VOLUMEDOWN
+  #keyMute: KEY_MUTE
+
+  channelLayouts:
+    stereo:
+      channels: {0: FL, 1: FR}
+    "5.1":
+      channels: {0: FL, 1: FR, 2: FC, 3: LFE, 4: SL, 5: SR}
+
+  clients:
+    - name: speaker1 # Unique name for client (hostname)
+      location: frontLeft
+      offset_us: 0
+      layouts:
+        stereo: {channel: 0, level: 0}
+        "5.1": {channel: 0, level: 0}
+
+    - name: speaker2
+      location: frontRight
+      offset_us: 0
+      layouts:
+        stereo: {channel: 1, level: 0}
+        "5.1": {channel: 1, level: 0}
+
+    - name: speaker3
+      location: center
+      offset_us: 0
+      layouts:
+        stereo: null
+        "5.1": {channel: 2, level: 0}
+
+  virtualChannels:
+    - channelNumber: 10 # Crossfader: blend between channels
+      crossfaderChannelA: 0
+      crossfaderChannelB: 1
+      crossfaderPosition: 50 # 0..100
+
+    #- channelNumber: 13 # Tonegenerator
+    #  toneGeneratorMode: spikes
+    #  toneGeneratorVolume: 20

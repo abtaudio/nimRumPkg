@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nimRum — Config</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/topology.css">
+    <link rel="stylesheet" href="/static/config.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="site-title">nimRum</a>
+        <nav class="view-nav">
+            <a href="/">Topology</a>
+            <a href="/levels">Levels</a>
+            <a href="/list">Status</a>
+            <a href="/channelmap">Channel Map</a>
+            <a href="/calibration">EQ Calibration</a>
+            <a href="/system">System</a>
+            <a href="/config" class="active">Config</a>
+            <a href="/network">Network</a>
+            <a href="/about">About</a>
+        </nav>
+    </header>
+
+    <section id="tx-config">
+        <h2>TX Config (txConfig.yaml)</h2>
+        <div class="editor-toolbar">
+            <button id="tx-config-reload">Reload</button>
+            <button id="tx-config-save">Save</button>
+            <button id="tx-config-save-restart">Save & Restart TX</button>
+            <span id="tx-config-status" class="status-text"></span>
+        </div>
+        <textarea id="tx-config-editor" spellcheck="false"></textarea>
+
+        <div class="helpers">
+            <h3>Helpers</h3>
+            <details class="helper-panel">
+                <summary>+ Add Client</summary>
+                <div class="helper-form">
+                    <div class="helper-row">
+                        <label>Name:</label>
+                        <select id="h-cli-name">
+                            <option value="">— type or select —</option>
+                        </select>
+                        <input type="text" id="h-cli-name-manual" placeholder="or type hostname" size="12">
+                    </div>
+                    <div class="helper-row">
+                        <label>Location:</label>
+                        <input type="text" id="h-cli-location" placeholder="Living Room Left">
+                    </div>
+                    <div class="helper-row">
+                        <label>Stereo ch:</label>
+                        <input type="text" id="h-cli-stereo" placeholder="0" size="6">
+                        <span class="hint">0=left, 1=right, or both: 0,1</span>
+                    </div>
+                    <div class="helper-row">
+                        <label>Offset (µs):</label>
+                        <input type="number" id="h-cli-offset" value="0" size="6">
+                    </div>
+                    <div class="helper-row">
+                        <label>Vol adjust:</label>
+                        <input type="number" id="h-cli-voladj" value="0" size="6">
+                        <span class="hint">offset added to mainVolume (e.g. -5 makes this speaker quieter)</span>
+                    </div>
+                    <button id="h-cli-insert">Insert into config</button>
+                </div>
+            </details>
+
+            <details class="helper-panel">
+                <summary>+ Add Virtual Channel (crossfade mixer)</summary>
+                <div class="helper-form">
+                    <div class="helper-row">
+                        <label>Channel #:</label>
+                        <input type="number" id="h-vc-chnum" value="10" min="6" max="15" size="4">
+                        <span class="hint">Use 10-15 for virtual channels (0-5 used by source)</span>
+                    </div>
+                    <div class="helper-row">
+                        <label>Source A:</label>
+                        <input type="number" id="h-vc-src-a" value="0" min="0" size="4">
+                        <span class="hint">Channel number (0=left, 1=right)</span>
+                    </div>
+                    <div class="helper-row">
+                        <label>Source B:</label>
+                        <input type="number" id="h-vc-src-b" value="1" min="0" size="4">
+                    </div>
+                    <div class="helper-row">
+                        <label>Fader:</label>
+                        <input type="number" id="h-vc-fader" value="50" min="0" max="127" size="4">
+                        <span class="hint">0=all A, 100=all B, 50=equal mix</span>
+                    </div>
+                    <button id="h-vc-insert">Insert into config</button>
+                </div>
+            </details>
+
+            <details class="helper-panel">
+                <summary>+ Add Virtual Channel (tone generator)</summary>
+                <div class="helper-form">
+                    <div class="helper-row">
+                        <label>Channel #:</label>
+                        <input type="number" id="h-tg-chnum" value="13" min="6" max="15" size="4">
+                        <span class="hint">Use 10-15 for virtual channels (0-5 used by source)</span>
+                    </div>
+                    <div class="helper-row">
+                        <label>Mode:</label>
+                        <select id="h-tg-mode">
+                            <option value="spikes">spikes</option>
+                            <option value="sinus">sinus</option>
+                            <option value="chirp">chirp</option>
+                        </select>
+                    </div>
+                    <div class="helper-row">
+                        <label>Frequency:</label>
+                        <input type="number" id="h-tg-freq" value="1000" min="20" max="20000" size="6">
+                        <span class="hint">Hz (sinus mode only)</span>
+                    </div>
+                    <div class="helper-row">
+                        <label>Volume:</label>
+                        <input type="number" id="h-tg-volume" value="80" min="0" max="127" size="4">
+                        <span class="hint">0-100</span>
+                    </div>
+                    <button id="h-tg-insert">Insert into config</button>
+                </div>
+            </details>
+
+            <details class="helper-panel">
+                <summary>TX Config Reference</summary>
+                <div class="helper-ref" id="ref-tx">Loading...</div>
+            </details>
+        </div>
+    </section>
+
+    <section id="device-config">
+        <h2>RX Config (rxConfig.yaml)</h2>
+        <div class="form-row">
+            <label for="device-select">Device:</label>
+            <select id="device-select">
+                <option value="">— select —</option>
+            </select>
+            <button id="device-fetch-btn">Fetch</button>
+        </div>
+        <div id="device-editor-wrap" style="display:none">
+            <div class="editor-toolbar">
+                <span id="device-filename" class="muted"></span>
+                <button id="device-config-save">Save & Restart</button>
+                <span id="device-config-status" class="status-text"></span>
+            </div>
+            <textarea id="device-config-editor" spellcheck="false"></textarea>
+        </div>
+        <div class="helpers">
+            <h3>Helpers</h3>
+            <details class="helper-panel">
+                <summary>RX Config Reference</summary>
+                <div class="helper-ref" id="ref-rx">Loading...</div>
+            </details>
+        </div>
+    </section>
+
+    <section id="src-config">
+        <h2>SRC Config (audioSourceConfig.yaml)</h2>
+        <div class="form-row">
+            <label for="src-select">Device:</label>
+            <select id="src-select">
+                <option value="">— select —</option>
+            </select>
+            <button id="src-fetch-btn">Fetch</button>
+        </div>
+        <div id="src-editor-wrap" style="display:none">
+            <div class="editor-toolbar">
+                <span id="src-filename" class="muted"></span>
+                <button id="src-config-save">Save & Restart</button>
+                <span id="src-config-status" class="status-text"></span>
+            </div>
+            <textarea id="src-config-editor" spellcheck="false"></textarea>
+        </div>
+        <div class="helpers">
+            <h3>Helpers</h3>
+            <details class="helper-panel">
+                <summary>SRC Config Reference</summary>
+                <div class="helper-ref" id="ref-src">Loading...</div>
+            </details>
+        </div>
+    </section>
+
+    <script src="/static/config.js"></script>
+</body>
+</html>

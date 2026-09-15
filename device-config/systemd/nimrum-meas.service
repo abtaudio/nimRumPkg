@@ -1,0 +1,19 @@
+[Unit]
+Description=nimRum Measurement (spike detection)
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/runNimRumMeas
+WorkingDirectory=/tmp
+Restart=on-failure
+RestartSec=3
+StartLimitBurst=5
+StartLimitIntervalSec=60
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nimrum-meas
+
+[Install]
+WantedBy=multi-user.target

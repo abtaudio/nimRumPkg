@@ -1,0 +1,33 @@
+[Unit]
+Description=nimRum TX audio transmitter
+After=network-online.target sound.target
+Wants=network-online.target
+
+# Restart policy: retry forever, never give up.
+#
+# StartLimitBurst/StartLimitIntervalSec belong in [Unit]. They were in [Service],
+# where systemd ignores them outright ("Unknown key ... in section [Service]") —
+# so the intended 5-per-60s was silently the 5-per-10s default, and exceeding it
+# puts the unit in `failed` permanently.
+#
+# StartLimitIntervalSec=0 disables the limit. That is deliberate: the normal
+# reason a nimRum service cannot start is that the network is not ready yet
+# (cold boot, AP down), which is transient and self-healing. Giving up after N
+# tries converts a temporary condition into a device that stays dead until a
+# human intervenes — the worst possible outcome for an unattended receiver.
+StartLimitIntervalSec=0
+StartLimitBurst=0
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/runNimRumTx
+Nice=-10
+WorkingDirectory=/root/nimRum
+Restart=on-failure
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nimrum-tx
+
+[Install]
+WantedBy=multi-user.target

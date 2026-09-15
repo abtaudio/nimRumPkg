@@ -1,0 +1,274 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --good: #22c55e;
+    --marginal: #eab308;
+    --poor: #ef4444;
+    --bg: #1a1a2e;
+    --card: #1e2a4a;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 1rem;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--muted); }
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge.online { background: var(--good); color: #000; }
+.badge.offline { background: var(--poor); color: #fff; }
+
+/* --- Unified Button System --- */
+button, .btn {
+    padding: 0.45rem 1.1rem;
+    border: none;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.4;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: opacity 0.15s, background 0.15s;
+    background: #3b82f6;
+    color: #fff;
+}
+
+button:hover, .btn:hover {
+    opacity: 0.85;
+}
+
+button:disabled, .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--muted);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.06);
+    opacity: 1;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 0.3rem;
+}
+
+#system-info {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.info-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.label { color: var(--muted); }
+
+#client-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+}
+
+.client-card {
+    background: var(--card);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #334155;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.client-card.paused { opacity: 0.4; }
+
+.client-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.client-name { font-weight: 600; font-size: 0.95rem; }
+
+.client-state {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.75rem;
+    background: var(--bg);
+}
+
+.client-ip {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+    font-family: monospace;
+}
+
+.client-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.2rem 1rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    overflow: hidden;
+    word-break: break-word;
+}
+
+.metric-val { color: var(--text); }
+.metric-bad { color: #ef4444 !important; font-weight: 600; }
+/* Amber: outside the design target but still fine for a listener. Red is reserved
+   for "outside the locked limit". Without this level every number was either normal
+   or alarming, so a device 3 us past a threshold looked as bad as one 10x out. */
+.metric-warn { color: #f59e0b !important; font-weight: 600; }
+
+.section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+    margin-bottom: 0.2rem;
+    padding-top: 0.4rem;
+    border-top: 3px solid var(--muted);
+}
+
+.section-label.sync-label {
+    border-top-color: var(--muted);
+}
+
+.section-label.net-label {
+    border-top-color: var(--muted);
+}
+
+.status-bars {
+    display: inline-flex;
+    gap: 3px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+.status-bar {
+    display: inline-block;
+    width: 5px;
+    height: 20px;
+    border-radius: 2px;
+}
+
+.tx-card {
+    border-left-color: #3b82f6;
+    grid-column: 1 / -1;
+}
+
+.src-card {
+    border-left-color: #a855f7;
+    grid-column: 1 / -1;
+}
+
+.section-heading {
+    grid-column: 1 / -1;
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+}
+
+.net-ring-badge {
+    color: #000;
+    font-weight: 600;
+}
+
+.legend {
+    grid-column: 1 / -1;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--card);
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.legend-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.legend-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    line-height: 1.6;
+}
+
+.legend-row span {
+    vertical-align: middle;
+}
+
+@media (max-width: 480px) {
+    body { padding: 0.5rem; }
+    #client-grid { grid-template-columns: 1fr; }
+    .client-card { padding: 0.6rem 0.75rem; }
+    .client-metrics { gap: 0.2rem 0.5rem; font-size: 0.75rem; }
+    h1 { font-size: 1.2rem; }
+}
+
+/* Reset button for the accumulating counters, Status view footer. Deliberately plain:
+   it changes reported numbers, not the system, so it should not look like a control. */
+.reset-counters-btn {
+    background: var(--card, #1e293b);
+    color: var(--text, #e2e8f0);
+    border: 1px solid #475569;
+    border-radius: 4px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+.reset-counters-btn:hover:not(:disabled) { border-color: #94a3b8; }
+.reset-counters-btn:disabled { opacity: 0.5; cursor: default; }
+.legend-note { font-size: 0.7rem; opacity: 0.75; }

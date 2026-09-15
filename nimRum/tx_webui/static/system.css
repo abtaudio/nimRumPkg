@@ -1,0 +1,196 @@
+#tx-update, #fleet-update, #fleet-actions {
+    max-width: 700px;
+    margin: 1em auto;
+    padding: 1em 1.5em;
+    background: var(--card);
+    border-radius: 8px;
+}
+
+.version-badge {
+    font-size: 0.8em;
+    background: var(--accent, #3b82f6);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 0.5em;
+}
+
+.version-badge.muted {
+    background: transparent;
+    color: var(--muted, #94a3b8);
+    font-size: 0.75em;
+}
+
+.version-badge.update-available {
+    color: var(--marginal, #eab308);
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    margin: 0.75em 0;
+}
+
+.form-row label {
+    min-width: 80px;
+    color: var(--muted, #94a3b8);
+}
+
+.form-row select,
+.form-row input[type="text"] {
+    padding: 0.4em 0.6em;
+    border-radius: 4px;
+    border: 1px solid var(--border, #334155);
+    background: var(--bg, #0f172a);
+    color: var(--fg, #e2e8f0);
+    min-width: 200px;
+}
+
+.form-row input[type="file"] {
+    color: var(--fg, #e2e8f0);
+}
+
+.status-text {
+    color: var(--muted, #94a3b8);
+    font-size: 0.9em;
+}
+
+.muted {
+    color: var(--muted, #94a3b8);
+    font-size: 0.9em;
+    margin: 0.25em 0 0.75em;
+}
+
+
+#fleet-progress {
+    margin-top: 1em;
+}
+
+#fleet-progress-bar {
+    height: 6px;
+    background: var(--border, #334155);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.75em;
+}
+
+#fleet-progress-fill {
+    height: 100%;
+    background: var(--accent, #3b82f6);
+    width: 0%;
+    transition: width 0.3s;
+}
+
+#fleet-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+}
+
+.device-result {
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    font-size: 0.85em;
+    background: var(--border, #334155);
+}
+
+.device-result.ok {
+    background: #166534;
+    color: #bbf7d0;
+}
+
+.device-result.error {
+    background: #7f1d1d;
+    color: #fecaca;
+}
+
+.device-result.pending {
+    opacity: 0.5;
+}
+
+/* Confirm overlay */
+#confirm-overlay, #updating-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#confirm-box, #updating-box {
+    background: var(--card);
+    padding: 2em;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 300px;
+}
+
+.confirm-buttons {
+    margin-top: 1em;
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+}
+
+/* Fleet Device Info */
+#fleet-info {
+    max-width: 1100px;
+    margin: 1em auto;
+    padding: 1em 1.5em;
+    background: var(--card);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.fleet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+    margin-top: 0.75em;
+    white-space: nowrap;
+}
+
+.fleet-table th,
+.fleet-table td {
+    padding: 0.5em 0.75em;
+    text-align: left;
+    border-bottom: 1px solid var(--border, #334155);
+}
+
+.fleet-table th {
+    color: var(--muted, #94a3b8);
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.fleet-table tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.fleet-table .error-text {
+    color: #fca5a5;
+    font-style: italic;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    #tx-update, #fleet-update, #fleet-actions {
+        padding: 1em;
+    }
+
+    #fleet-actions .form-row {
+        flex-wrap: wrap;
+    }
+
+    #fleet-actions .form-row button {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #fleet-info {
+        padding: 0.75em;
+    }
+}

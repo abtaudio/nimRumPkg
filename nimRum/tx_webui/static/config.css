@@ -1,0 +1,154 @@
+#tx-config, #device-config, #src-config {
+    max-width: 800px;
+    margin: 1em auto;
+    padding: 1em 1.5em;
+    background: var(--card);
+    border-radius: 8px;
+}
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    margin-bottom: 0.5em;
+}
+
+textarea {
+    width: 100%;
+    min-height: 400px;
+    padding: 0.75em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.85em;
+    line-height: 1.5;
+    background: var(--bg, #0f172a);
+    color: var(--fg, #e2e8f0);
+    border: 1px solid var(--border, #334155);
+    border-radius: 4px;
+    resize: vertical;
+    tab-size: 2;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    margin: 0.75em 0;
+}
+
+.form-row label {
+    min-width: 80px;
+    color: var(--muted, #94a3b8);
+}
+
+.form-row select {
+    padding: 0.4em 0.6em;
+    border-radius: 4px;
+    border: 1px solid var(--border, #334155);
+    background: var(--bg, #0f172a);
+    color: var(--fg, #e2e8f0);
+    min-width: 200px;
+}
+
+.status-text {
+    color: var(--muted, #94a3b8);
+    font-size: 0.9em;
+}
+
+.muted {
+    color: var(--muted, #94a3b8);
+    font-size: 0.9em;
+}
+
+/* Helpers */
+.helpers {
+    margin-top: 1.5em;
+}
+
+.helpers h3 {
+    color: var(--muted, #94a3b8);
+    font-size: 0.9em;
+    margin-bottom: 0.5em;
+}
+
+.helper-panel {
+    margin: 0.5em 0;
+    border: 1px solid var(--border, #334155);
+    border-radius: 4px;
+}
+
+.helper-panel summary {
+    padding: 0.5em 0.75em;
+    cursor: pointer;
+    color: var(--accent, #3b82f6);
+    font-size: 0.9em;
+}
+
+.helper-panel summary:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.helper-form, .helper-ref {
+    padding: 0.75em;
+    border-top: 1px solid var(--border, #334155);
+}
+
+.helper-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0.4em 0;
+}
+
+.helper-row label {
+    min-width: 90px;
+    color: var(--muted, #94a3b8);
+    font-size: 0.85em;
+}
+
+.helper-row input {
+    padding: 0.3em 0.5em;
+    border-radius: 3px;
+    border: 1px solid var(--border, #334155);
+    background: var(--bg, #0f172a);
+    color: var(--fg, #e2e8f0);
+    font-size: 0.85em;
+}
+
+.hint {
+    color: var(--muted, #94a3b8);
+    font-size: 0.8em;
+}
+
+.helper-form button {
+    margin-top: 0.5em;
+    font-size: 0.85em;
+}
+
+.ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8em;
+    margin: 0.5em 0;
+}
+
+.ref-table th, .ref-table td {
+    padding: 0.3em 0.5em;
+    border: 1px solid var(--border, #334155);
+    text-align: left;
+}
+
+.ref-table th {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent, #3b82f6);
+}
+
+.ref-table td:first-child {
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.helper-ref h4 {
+    margin: 0.75em 0 0.25em;
+    font-size: 0.85em;
+    color: var(--fg, #e2e8f0);
+}

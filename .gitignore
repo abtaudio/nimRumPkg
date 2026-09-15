@@ -1,0 +1,24 @@
+# Pre-built shared libraries
+nimRum/*.so
+clibs/out/
+
+# Build artifacts
+*.o
+*.d
+build/
+RESULT/
+dist/
+*.whl
+*.tar
+*.egg-info/
+
+# Python
+__pycache__/
+*.pyc
+
+# Platform tag file (generated at build time)
+platformName.txt
+
+# Editor/IDE
+.vscode/
+*.swp
