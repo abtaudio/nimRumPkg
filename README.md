@@ -15,14 +15,14 @@ Multi-room wireless audio streaming over WiFi/Ethernet with sub-sample synchroni
 
 **This means you can put multiple wireless speakers in the same room and have them play together** — for music or as surround speakers — without the timing issues that plague other wireless audio solutions.
 
-![nimRum Topology View](https://raw.githubusercontent.com/abtaudio/nimRumPkg/v2.8.5/doc/nimRum-topology.png)
+![nimRum Topology View](https://raw.githubusercontent.com/abtaudio/nimRumPkg/v2.8.7/doc/nimRum-topology.png)
 
 ## How the pieces fit
 
 Four roles, all of them just software — one box can be several at once, and every link is
 UDP over localhost, Ethernet or Wi-Fi:
 
-![nimRum architecture](https://raw.githubusercontent.com/abtaudio/nimRumPkg/v2.8.5/doc/nimRum-architecture.png)
+![nimRum architecture](https://raw.githubusercontent.com/abtaudio/nimRumPkg/v2.8.7/doc/nimRum-architecture.png)
 
 ## Install
 
@@ -69,7 +69,7 @@ before it:
 
 1. **Flash Raspberry Pi OS and get the device on the network.** Nothing here does that
    for you. Raspberry Pi Imager can preload SSH, WiFi and a hostname;
-   [`doc/headless-install.md`](https://github.com/abtaudio/nimRumPkg/blob/v2.8.5/doc/headless-install.md) covers the awkward version, with
+   [`doc/headless-install.md`](https://github.com/abtaudio/nimRumPkg/blob/v2.8.7/doc/headless-install.md) covers the awkward version, with
    no monitor and no ethernet.
 2. **`setup-device.sh`** — hostname, NTP, audio and DAC overlay (below).
 3. **`pip3 install nimRum`** on the device.
@@ -107,7 +107,7 @@ playback settings stay at their auto-detecting defaults.
 
 The commands above run in the foreground, which is fine for trying things out. For a
 permanent installation the package ships ready-made unit files in
-[`device-config/`](https://github.com/abtaudio/nimRumPkg/tree/v2.8.5/device-config):
+[`device-config/`](https://github.com/abtaudio/nimRumPkg/tree/v2.8.7/device-config):
 
 ```
 device-config/systemd/     One unit per role: rx, tx, webui, src, meas
@@ -150,7 +150,7 @@ journalctl -u nimrum-rx -f
 - Optional IR remote control (volume/mute via LIRC)
 - Optional rotary encoder for volume
 - RGB LED status indicator
-- Auto-start and restart-on-failure via systemd units (see [device-config/](https://github.com/abtaudio/nimRumPkg/tree/v2.8.5/device-config))
+- Auto-start and restart-on-failure via systemd units (see [device-config/](https://github.com/abtaudio/nimRumPkg/tree/v2.8.7/device-config))
 
 ## Hardware
 
@@ -183,15 +183,15 @@ depends on the artefact, so they are listed rather than summarised:
 
 | Artefact | Licence |
 |---|---|
-| All Python in `nimRum/`, plus `scripts/`, `tests/`, `doc/` | **GPL-3.0-or-later**, with a linking exception for the nimRumLib binaries — [LICENSE.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.5/LICENSE.txt) |
-| C sources under `clibs/dsp/` and `clibs/audio_source/`, and the libraries built from them (`libnimRumDSP.so`, `nimRumAudioSource_ct.so`) | **GPL-3.0-or-later**, same as the Python — [LICENSE.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.5/LICENSE.txt) |
-| The pre-built nimRumLib binaries `libNimRumTx_ct.so` and `libNimRumRx_ct.so` | **Proprietary.** Private and evaluation use only; no redistribution and no commercial use without written permission — [LICENSE-nimRumLib.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.5/LICENSE-nimRumLib.txt) |
+| All Python in `nimRum/`, plus `scripts/`, `tests/`, `doc/` | **GPL-3.0-or-later**, with a linking exception for the nimRumLib binaries — [LICENSE.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.7/LICENSE.txt) |
+| C sources under `clibs/dsp/` and `clibs/audio_source/`, and the libraries built from them (`libnimRumDSP.so`, `nimRumAudioSource_ct.so`) | **GPL-3.0-or-later**, same as the Python — [LICENSE.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.7/LICENSE.txt) |
+| The pre-built nimRumLib binaries `libNimRumTx_ct.so` and `libNimRumRx_ct.so` | **Proprietary.** Private and evaluation use only; no redistribution and no commercial use without written permission — [LICENSE-nimRumLib.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.7/LICENSE-nimRumLib.txt) |
 
 In short: everything whose source is in this repository is GPL-3.0-or-later. The two
 nimRumLib binaries are not, their source is not published, and they state the same terms
 in their own startup banner.
 
-The linking exception in [LICENSE.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.5/LICENSE.txt) is what allows GPL-3.0 code in this
+The linking exception in [LICENSE.txt](https://github.com/abtaudio/nimRumPkg/blob/v2.8.7/LICENSE.txt) is what allows GPL-3.0 code in this
 package to link against those two proprietary libraries.
 
 Commercial licensing: [AbtAudio AB](https://www.abtaudio.tech).

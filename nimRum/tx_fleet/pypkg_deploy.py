@@ -87,11 +87,100 @@ def update_tx_from_pypi(version: str = "") -> Dict:
             err = res.stderr.decode("utf-8", errors="replace").strip()
             return {"error": f"pip install failed: {err}"}
 
+        # A PyPI install leaves no wheel on disk, so the fleet update had
+        # nothing correct to push and silently deployed a stale wheel. Fetch
+        # the matching wheels into wheels/ so get_tx_wheel_path() finds them.
+        wheel_result = _fetch_wheels_to_cache(version)
+
         # Schedule restart (give time for HTTP response to be sent)
         threading.Timer(1.0, _restart_tx).start()
-        return {"ok": True, "message": "Installed, restarting..."}
+        msg = "Installed, restarting..."
+        if wheel_result.get("error"):
+            # TX itself updated fine; only the fleet-deploy cache failed. Report
+            # it rather than let a later fleet update push the wrong version.
+            msg += (" WARNING: could not cache wheel for fleet deploy: "
+                    + wheel_result["error"])
+        return {"ok": True, "message": msg,
+                "wheels": wheel_result.get("wheels", [])}
     except Exception as e:
         return {"error": str(e)}
+
+
+def _fetch_wheels_to_cache(version: str = "") -> Dict:
+    """Download the nimrum wheel(s) from PyPI into the wheels/ cache dir.
+
+    The fleet update pushes a wheel to each device, so TX must keep the actual
+    wheel files, not just the installed package. A bare `pip install` from PyPI
+    does not leave one behind, which is why a PyPI-based TX update used to leave
+    the fleet update with no correct wheel to push.
+
+    The fleet is mixed-architecture (aarch64 and armv7l), so both wheels for the
+    release are fetched. `pip download` on TX would only get TX's own arch and
+    silently leave the 32-bit devices with no wheel; instead we read the PyPI
+    release metadata and download every published .whl for the exact version.
+
+    Args:
+        version: Specific version string, or empty for the latest.
+
+    Returns:
+        Dict with 'wheels' (list of cached wheel paths) or 'error'.
+    """
+    import json as _json
+    import urllib.request
+
+    wheels_dir = os.path.join(os.getcwd(), "wheels")
+    try:
+        os.makedirs(wheels_dir, exist_ok=True)
+    except OSError as e:
+        return {"error": f"cannot create {wheels_dir}: {e}"}
+
+    # Resolve the version and its file list from the PyPI JSON API.
+    try:
+        if version:
+            url = f"https://pypi.org/pypi/nimrum/{version}/json"
+        else:
+            url = "https://pypi.org/pypi/nimrum/json"
+        req = urllib.request.Request(url, headers={"Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = _json.loads(resp.read())
+    except Exception as e:
+        return {"error": f"PyPI metadata fetch failed: {e}"}
+
+    resolved = data.get("info", {}).get("version", version)
+    # /pypi/<name>/json lists all releases under "releases"; the versioned
+    # endpoint lists only that version's files under "urls".
+    if version:
+        files = data.get("urls", [])
+    else:
+        files = data.get("releases", {}).get(resolved, [])
+
+    wheels = [f for f in files if f.get("packagetype") == "bdist_wheel"
+              and f.get("filename", "").endswith(".whl")]
+    if not wheels:
+        return {"error": f"no wheels published for nimrum {resolved}"}
+
+    saved = []
+    for f in wheels:
+        fname = f["filename"]
+        dest = os.path.join(wheels_dir, fname)
+        if os.path.isfile(dest):
+            saved.append(dest)
+            continue
+        try:
+            req = urllib.request.Request(f["url"])
+            with urllib.request.urlopen(req, timeout=60) as r:
+                content = r.read()
+            # Write to a temp name then rename, so a partial download never
+            # looks like a usable wheel to get_tx_wheel_path().
+            tmp = dest + ".part"
+            with open(tmp, "wb") as out:
+                out.write(content)
+            os.replace(tmp, dest)
+            saved.append(dest)
+        except Exception as e:
+            return {"error": f"download of {fname} failed: {e}"}
+
+    return {"wheels": sorted(saved)}
 
 
 def update_tx_from_wheel(wheel_path: str) -> Dict:

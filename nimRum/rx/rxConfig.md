@@ -26,7 +26,7 @@ plus this text. Rename it to `rxConfig.yaml` to adopt those settings.
 | printLevel | note | Printout verbosity: `err`, `warn`, `note`, `debug`. `debug` adds the periodic sync status line. |
 | logEnable | 0 | Data logging to `.dat` files for analysis. 0 = off, 1 = core logs, 2 = core plus filter internals (CPU expensive, buffers wrap in minutes). |
 | logPath | folder of the config file | Where `.dat` files are written. |
-| ssh_user | "" | SSH username for this device, reported to TX for fleet management. The RX process itself usually runs as root while SSH logs in as a normal user. |
+| ssh_user | "" | Login user the TX uses to SSH into this device for fleet management (deploying a new wheel, restart/reboot from the Web UI). This is **not** the user the RX process runs as — the service normally runs as root, while the deploy logs in as an ordinary user such as `pi` or `nimrum`. Set this to a real, non-root user that exists on the device and has passwordless `sudo`. It is the source of truth: the RX reports it to TX in every discovery ping, and TX caches it in its device registry, so editing it here is what sticks. Leave empty only if that user is `pi` (the TX default). For the Web UI fleet update to work, the TX's SSH public key must be in that user's `~/.ssh/authorized_keys` on this device — see "Fleet SSH setup" in `INSTALL.md`. Avoid `root`: it works but is poor practice and the deploy does not need it. |
 
 ## pcmMode
 

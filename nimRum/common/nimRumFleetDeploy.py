@@ -129,6 +129,15 @@ def deploy_single_device(
     wheel_name = os.path.basename(wheel_path)
     remote_tmp = f"/tmp/{wheel_name}"
 
+    # The wheel filename encodes the version we expect on disk afterwards:
+    # nimrum-<version>-<pytag>-<abi>-<platform>.whl. Verifying against this is
+    # what turns a no-op install (same version reinstalled, or a pip that
+    # changed nothing) from a false success into a real check.
+    expected_version = ""
+    parts = wheel_name.split("-")
+    if len(parts) >= 2:
+        expected_version = parts[1]
+
     # 3. SCP wheel to device
     rc, err = _run_scp(wheel_path, f"{target}:{remote_tmp}", ssh_opts)
     if rc != 0:
@@ -147,12 +156,37 @@ def deploy_single_device(
         "if [ -f \"$nimDir/libnimRumDSP.so\" ]; then "
         "  ln -sf \"$nimDir/libnimRumDSP.so\" /usr/local/lib/libnimRumDSP.so; ldconfig; "
         "fi; "
-        "echo DEPLOY_OK"
+        "echo INSTALL_DONE"
     )
     rc, stdout, stderr = _run_ssh(target, f"sudo bash -c '{install_cmd}'",
                                   ssh_opts, timeout=60)
-    if "DEPLOY_OK" not in stdout and "Successfully installed" not in stdout:
+    if "INSTALL_DONE" not in stdout and "Successfully installed" not in stdout:
         return {"error": f"Install failed: {stdout[-200:]}"}
+
+    # 5b. Verify the version actually importable now, as a *separate* command so
+    # its quoting never collides with the install heredoc's single quotes. The
+    # metadata version is pip's own source of truth; a deploy that did not land
+    # shows the old version here and is caught. Double quotes only on the remote.
+    verify_cmd = (
+        'python3 -c "from importlib.metadata import version;'
+        'print(chr(10) + \\"NIMRUM_VER=\\" + version(\\"nimrum\\"))"'
+    )
+    _rc, vout, _verr = _run_ssh(target, verify_cmd, ssh_opts, timeout=15)
+
+    installed_version = ""
+    for line in vout.splitlines():
+        line = line.strip()
+        if line.startswith("NIMRUM_VER="):
+            installed_version = line.split("=", 1)[1].strip()
+            break
+
+    if not installed_version:
+        return {"error": f"Installed but version unreadable: {vout[-200:]}"}
+
+    if expected_version and installed_version != expected_version:
+        return {"error": (f"Version mismatch after install: device reports "
+                          f"{installed_version}, expected {expected_version} "
+                          f"(from {wheel_name}). The deploy did not take.")}
 
     # 6. Restart services (all nimrum-* units enabled on this device)
     #    Oneshot units are skipped: they do boot-time work (e.g. nimrum-dac
@@ -168,7 +202,7 @@ def deploy_single_device(
         )
         _run_ssh(target, restart_cmd, ssh_opts, timeout=10)
 
-    return {"ok": True}
+    return {"ok": True, "version": installed_version}
 
 
 def deploy_fleet(

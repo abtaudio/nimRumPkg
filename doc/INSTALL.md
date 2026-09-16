@@ -73,6 +73,8 @@ nimRumRXConfig:
   pcmDevice: "default"    # ALSA playback device (aplay -l to list)
   pcmMode: auto           # auto | mmap | writei (see below)
   printLevel: note        # err | warn | note | debug
+  ssh_user: pi            # login user TX uses to deploy to this device
+                          # (see "Fleet SSH setup" below)
 ```
 
 `pcmMode` selects the ALSA access method. `auto` picks mmap on ALSA < 1.2.10 and
@@ -119,6 +121,51 @@ targetHost: ""            # empty = auto-discover TX
 ```
 
 Use `captureMode: file` and `filePath: /path/to/music.flac` for file playback.
+
+## Fleet SSH setup
+
+The TX Web UI can deploy a new wheel and restart or reboot RX/SRC devices for
+you ("Fleet update"). To do that, TX opens an SSH connection to each device and
+runs `pip` and `systemctl` under `sudo`. This needs three things on **every**
+RX/SRC device:
+
+1. **A non-root login user** — typically `pi` on Raspberry Pi OS, or a user you
+   create such as `nimrum`. It must have passwordless `sudo`:
+   ```bash
+   # on the RX/SRC device, as an admin user
+   sudo usermod -aG sudo <user>
+   echo '<user> ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/<user>
+   sudo chmod 440 /etc/sudoers.d/<user>
+   ```
+
+2. **The TX's SSH public key installed for that user.** Generate a key on TX
+   once (if you do not already have one), then copy it to each device:
+   ```bash
+   # on the TX device, once
+   ssh-keygen -t ed25519 -f ~/.ssh/id_nimrum -N ""
+
+   # for each RX/SRC device
+   ssh-copy-id -i ~/.ssh/id_nimrum.pub <user>@<device-hostname-or-ip>
+   ```
+   Point the Web UI at this private key (it is configured at TX startup; see the
+   TX service/config). Verify it works with no password prompt:
+   ```bash
+   ssh -i ~/.ssh/id_nimrum <user>@<device> 'sudo -n true && echo OK'
+   ```
+
+3. **`ssh_user` set in that device's `rxConfig.yaml`** (or `audioSourceConfig.yaml`
+   for a SRC) to the user from step 1. The device reports this to TX in its
+   discovery ping, and TX remembers it — so this file is the single place you set
+   it. If you leave it empty, TX assumes `pi`.
+
+Notes:
+- **Do not use `root`.** It works, but the deploy only needs a normal user with
+  `sudo`, and running fleet operations as root is unnecessary risk.
+- If a fleet update reports an authentication failure for a device, it almost
+  always means step 2 or 3 is missing or the user in `ssh_user` cannot log in
+  with TX's key.
+- The RX/SRC **service** still runs as configured (often root) — this user is
+  only for TX-initiated SSH management, not for running the audio process.
 
 ## Start Services
 
