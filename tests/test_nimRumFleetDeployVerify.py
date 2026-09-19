@@ -200,6 +200,77 @@ class TestFetchWheelsToCache:
         assert glob.glob(os.path.join(str(tmp_path), "wheels", "*.whl")) == []
 
 
+class TestVersionScopedFleetDeploy:
+    """The fleet update means "same version as TX". With both 2.8.5 and 2.8.7
+    wheels in the cache dir, deploying the 2.8.7 wheel must never let the older
+    2.8.5 win (which is exactly what shipped 2.8.5 to a 2.8.7 TX)."""
+
+    def test_only_the_selected_version_is_offered_to_the_device(
+            self, monkeypatch, tmp_path):
+        for n in [
+            "nimrum-2.8.5-py3-none-manylinux_2_27_aarch64.whl",
+            "nimrum-2.8.5-py3-none-linux_armv7l.whl",
+            "nimrum-2.8.7-py3-none-manylinux_2_27_aarch64.whl",
+            "nimrum-2.8.7-py3-none-linux_armv7l.whl",
+        ]:
+            (tmp_path / n).write_bytes(b"PK\x03\x04")
+
+        selected = tmp_path / "nimrum-2.8.7-py3-none-manylinux_2_27_aarch64.whl"
+        captured = {}
+
+        def _fake_deploy_single_device(target, wheel_paths, ssh_opts,
+                                       restart=True, with_deps=False):
+            captured["wheel_paths"] = list(wheel_paths)
+            return {"ok": True, "version": "2.8.7"}
+
+        import nimRum.common.nimRumFleetDeploy as _fd
+        monkeypatch.setattr(_fd, "deploy_single_device",
+                            _fake_deploy_single_device)
+        monkeypatch.setattr(pd, "resolve_target", lambda h: h)
+        monkeypatch.setattr(pd, "get_ssh_opts", lambda: [])
+
+        pd._deploy_single_device("host-rx2", str(selected))
+
+        names = {os.path.basename(p) for p in captured["wheel_paths"]}
+        assert names == {
+            "nimrum-2.8.7-py3-none-manylinux_2_27_aarch64.whl",
+            "nimrum-2.8.7-py3-none-linux_armv7l.whl",
+        }
+        assert not any("2.8.5" in n for n in names)
+
+
+class TestFetchWheelsCleansOldVersions:
+    def test_old_version_wheels_are_removed(self, monkeypatch, tmp_path):
+        monkeypatch.chdir(tmp_path)
+        wheels_dir = tmp_path / "wheels"
+        wheels_dir.mkdir()
+        (wheels_dir / "nimrum-2.8.5-py3-none-linux_armv7l.whl").write_bytes(b"x")
+        (wheels_dir / "nimrum-2.8.5-py3-none-manylinux_2_27_aarch64.whl").write_bytes(b"x")
+
+        meta = {
+            "info": {"version": "2.8.7"},
+            "urls": [
+                {"packagetype": "bdist_wheel",
+                 "filename": "nimrum-2.8.7-py3-none-manylinux_2_27_aarch64.whl",
+                 "url": "https://x/a.whl"},
+                {"packagetype": "bdist_wheel",
+                 "filename": "nimrum-2.8.7-py3-none-linux_armv7l.whl",
+                 "url": "https://x/b.whl"},
+            ],
+        }
+        _install_fake_urllib(monkeypatch, meta)
+
+        result = pd._fetch_wheels_to_cache("2.8.7")
+        assert "error" not in result, result
+        import glob
+        left = {os.path.basename(p)
+                for p in glob.glob(os.path.join(str(wheels_dir), "*.whl"))}
+        assert left == {
+            "nimrum-2.8.7-py3-none-manylinux_2_27_aarch64.whl",
+            "nimrum-2.8.7-py3-none-linux_armv7l.whl",
+        }
+
+
 def _install_fake_urllib(monkeypatch, meta, fail_download=False):
     """Patch urllib.request in pypkg_deploy to serve metadata and wheel bytes
     without touching the network."""

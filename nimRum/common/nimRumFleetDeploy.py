@@ -27,6 +27,37 @@ SSH_OPTS_DEFAULT = [
     "-o", "StrictHostKeyChecking=accept-new",
 ]
 
+# The single definition of "restart every nimRum process on this box, whatever its
+# role is". It asks the device which nimrum-* units are enabled rather than naming
+# nimrum-rx/tx/src, so it does the right thing on a plain RX, the SRC box, and the TX
+# box (which also runs nimrum-src) alike. Oneshot units are skipped: they do boot-time
+# work (e.g. nimrum-dac loading out-of-tree DAC modules) and restarting them mid-session
+# either does nothing or leaves them failed. Both the remote deploy path and TX's own
+# self-update/restart path use this, so a hardcoded pair can no longer strand a
+# co-located service on a stale image.
+RESTART_NIMRUM_UNITS_CMD = (
+    "for u in $(systemctl list-unit-files 'nimrum-*' --no-legend"
+    " | awk '/enabled/{print $1}'); do"
+    " [ \"$(systemctl show -p Type --value $u)\" = oneshot ]"
+    " || sudo systemctl restart $u;"
+    " done 2>/dev/null; true"
+)
+
+
+def restart_all_nimrum_units(target: str, ssh_opts: List[str],
+                             timeout: int = 10) -> None:
+    """Restart every enabled non-oneshot nimrum-* unit on a remote device.
+
+    Role-agnostic by design — see RESTART_NIMRUM_UNITS_CMD. Best effort: the shell
+    swallows per-unit failures so one wedged unit does not block the rest.
+
+    Args:
+        target: SSH target string (hostname, or user@ip).
+        ssh_opts: SSH options list.
+        timeout: SSH timeout in seconds.
+    """
+    _run_ssh(target, RESTART_NIMRUM_UNITS_CMD, ssh_opts, timeout=timeout)
+
 
 def _build_ssh_opts(ssh_key: str = "", timeout: int = 5) -> List[str]:
     """Build SSH option list with optional key file."""
@@ -188,19 +219,12 @@ def deploy_single_device(
                           f"{installed_version}, expected {expected_version} "
                           f"(from {wheel_name}). The deploy did not take.")}
 
-    # 6. Restart services (all nimrum-* units enabled on this device)
-    #    Oneshot units are skipped: they do boot-time work (e.g. nimrum-dac
-    #    loading out-of-tree DAC modules) and restarting them mid-session either
-    #    does nothing or leaves them failed.
+    # 6. Restart services — every enabled non-oneshot nimrum-* unit on this
+    #    device, role-agnostic. Shared with TX's own restart path so a hardcoded
+    #    service list can no longer strand a co-located unit. See
+    #    restart_all_nimrum_units / RESTART_NIMRUM_UNITS_CMD.
     if restart:
-        restart_cmd = (
-            "for u in $(systemctl list-unit-files 'nimrum-*' --no-legend"
-            " | awk '/enabled/{print $1}'); do"
-            " [ \"$(systemctl show -p Type --value $u)\" = oneshot ]"
-            " || sudo systemctl restart $u;"
-            " done 2>/dev/null; true"
-        )
-        _run_ssh(target, restart_cmd, ssh_opts, timeout=10)
+        restart_all_nimrum_units(target, ssh_opts)
 
     return {"ok": True, "version": installed_version}
 

@@ -153,14 +153,14 @@ class nimRumRx(nimRumPyCommon.nimRumPyCommon):
                     self.useLocalClock,
                     self.cfg.getPcmMode(),
                     self.cfg.getForceS16(),
-                    self.cfg.get("outputChannelEnable"),
+                    self.cfg.getOutputChannelEnable(),
                     self.cfg.get("pcmDevName"),
                     self.cfg.get("volumeDevName"),
                     sshUser=sshUser,
                 )
 
-                rxLib.c_libNimRumRxSetStaticDelay(self.cfg.get("staticDelay_us"))
-                rxLib.c_libNimRumRxSetLogs(self.cfg.get("logEnable"))
+                rxLib.c_libNimRumRxSetStaticDelay(self.cfg.getStaticDelayUs())
+                rxLib.c_libNimRumRxSetLogs(self.cfg.getLogEnable())
                 rxLib.c_libNimRumRxSetLogsPath(self.cfg.get("logPath"))
 
                 # Disable DAC auto-mute (TAS5756M/pcm512x mutes on silence)

@@ -180,6 +180,19 @@ def _fetch_wheels_to_cache(version: str = "") -> Dict:
         except Exception as e:
             return {"error": f"download of {fname} failed: {e}"}
 
+    # Remove any other-version wheels so the cache holds only the current TX
+    # version. The fleet deploy is scoped to a version anyway, but a tidy cache
+    # avoids surprises and keeps get_tx_wheel_path unambiguous.
+    import glob
+    keep = {os.path.basename(p) for p in saved}
+    for old in glob.glob(os.path.join(wheels_dir, "nimrum-*.whl")):
+        if os.path.basename(old) not in keep:
+            try:
+                os.remove(old)
+            except OSError:
+                pass  # best effort; a leftover cannot mis-deploy now that the
+                      # fleet deploy is version-scoped
+
     return {"wheels": sorted(saved)}
 
 
@@ -214,10 +227,19 @@ def update_tx_from_wheel(wheel_path: str) -> Dict:
 
 
 def _restart_tx() -> None:
-    """Restart TX and WebUI processes via systemctl."""
+    """Restart every enabled non-oneshot nimrum-* unit on the TX box, locally.
+
+    Not just nimrum-tx/webui: the TX box may also run nimrum-src (the co-located
+    AudioSource). A hardcoded pair left that service running its old image after a
+    TX self-update or a "Restart TX" click, so it kept reporting a stale version in
+    its discovery ping. This runs the same role-agnostic loop the remote deploy path
+    uses (RESTART_NIMRUM_UNITS_CMD), but locally via bash rather than over SSH, since
+    it is executing on the TX box itself.
+    """
     import subprocess
+    from nimRum.common.nimRumFleetDeploy import RESTART_NIMRUM_UNITS_CMD
     subprocess.run(
-        ["sudo", "systemctl", "restart", "nimrum-tx", "nimrum-webui"],
+        ["bash", "-c", RESTART_NIMRUM_UNITS_CMD],
         capture_output=True,
     )
 
@@ -242,12 +264,20 @@ def get_fleet_state() -> Dict:
         return dict(_fleet_state)
 
 
-def deploy_fleet(wheel_path: str, devices: Optional[List[str]] = None) -> Dict:
+def deploy_fleet(wheel_path: str, devices: Optional[List[str]] = None,
+                 include_tx: bool = False) -> Dict:
     """Deploy a wheel to all (or specified) RX/SRC devices in parallel.
 
     Args:
         wheel_path: Local path to .whl file on TX.
         devices: List of hostnames, or None for all from registry.
+        include_tx: When selecting devices from the registry (devices is None),
+            keep the local TX host in the set instead of excluding it. This routes
+            the TX box through the same verified deploy path (install + version
+            check + role-agnostic restart) as the rest of the fleet, rather than
+            relying on the operator to also run the separate TX self-update. The
+            deploy reaches TX over loopback SSH like any other device. Ignored when
+            an explicit devices list is given — that list is taken as-is.
 
     Returns:
         Dict with 'ok' if started, or 'error'.
@@ -266,10 +296,14 @@ def deploy_fleet(wheel_path: str, devices: Optional[List[str]] = None) -> Dict:
         devices = get_registry().get_devices_by_role("rx")
         devices += [d for d in get_registry().get_devices_by_role("src")
                     if d not in devices]
-        # Exclude local TX device (deployed separately via TX Software section)
-        import platform
-        local_host = platform.node()
-        devices = [d for d in devices if d != local_host]
+        if not include_tx:
+            # By default exclude the local TX device — it is deployed separately
+            # via the TX Software section. include_tx=True keeps it here so a
+            # single fleet update also covers the TX box (and its co-located
+            # nimrum-src) through the verified path.
+            import platform
+            local_host = platform.node()
+            devices = [d for d in devices if d != local_host]
 
     if not devices:
         return {"error": "No devices found"}
@@ -317,10 +351,22 @@ def _deploy_single_device(hostname: str, wheel_path: str) -> Dict:
     target = resolve_target(hostname)
     opts = get_ssh_opts()
 
-    # Find both arch wheels (the wheel_path may be one arch, look for the other)
+    # Deploy exactly the version in wheel_path (the TX version, per the UI's
+    # "same as TX"), just for both architectures. Globbing all `nimrum*.whl`
+    # let a stale OLDER version in the dir win, because select_wheel_for_arch
+    # takes the first arch match and 2.8.5 sorts before 2.8.7 — that shipped
+    # 2.8.5 to the fleet on a 2.8.7 TX. Scope the glob to this version only.
     import glob
     wheel_dir = os.path.dirname(wheel_path)
-    wheel_paths = glob.glob(os.path.join(wheel_dir, "nimrum*.whl"))
+    wheel_name = os.path.basename(wheel_path)
+    # nimrum-<version>-<pytag>-<abi>-<platform>.whl
+    parts = wheel_name.split("-")
+    version = parts[1] if len(parts) >= 2 else ""
+    if version:
+        wheel_paths = glob.glob(
+            os.path.join(wheel_dir, f"nimrum-{version}-*.whl"))
+    else:
+        wheel_paths = []
     if not wheel_paths:
         wheel_paths = [wheel_path]
 

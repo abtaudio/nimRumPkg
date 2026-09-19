@@ -184,7 +184,7 @@ def compute_vol_adjustments_detailed(
                 name, adj_db, max_adjustment if adj_db > 0 else -max_adjustment)
         adj_db = max(-max_adjustment, min(max_adjustment, adj_db))
         # dB -> wire volume steps. Writing the dB value straight into volCal
-        # applied only half the correction (fixed 2026-09-13).
+        # applied only half the correction (since fixed).
         adjustments[name] = int(round(adj_db / VOL_DB_PER_STEP))
 
     info["clamped"] = sorted(info["clamped"])

@@ -90,7 +90,7 @@ build_lib() {
         # artefact and is gitignored, so it exists in a tree that has built before and
         # nowhere else. Without this the first build in a new checkout fails with
         # "cp: cannot create regular file 'clibs/out/<arch>/'" after the compile has
-        # already succeeded - found 2026-09-15 by building an exported public tree.
+        # already succeeded - found by building an exported public tree.
         mkdir -p "clibs/out/${ARCH}"
         if [ -f "RESULT/${ARCH}/nimRum/${output_so}" ]; then
             cp "RESULT/${ARCH}/nimRum/${output_so}" "clibs/out/${ARCH}/"

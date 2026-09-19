@@ -85,7 +85,7 @@
     // means nothing is coming back from it.
     function isLost(c) {
         if (!c) return false;
-        /* marginSct/marginCst were part of this test until 2026-09-15. They are zeroed
+        /* marginSct/marginCst used to be part of this test. They are zeroed
          * in a public build, which would have removed two of the seven guards and made
          * a live device more likely to be called Lost. Only fields that survive both
          * builds may be used here.

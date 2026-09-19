@@ -65,7 +65,7 @@ happens the slider shows the **lowest** member value in amber with a `≠` badge
 listing the individual values — moving it then never makes a speaker louder than
 it already is, and it flattens all members to one value.
 
-Before 2026-08-29 there was one slider and one config key (`mainVolume`) doing
+There used to be one slider and one config key (`mainVolume`) doing
 both jobs, and `setMainVolume` rewrote the whole of `txConfig.yaml` on every
 slider step — the sliders fire on `input`, so a single drag could rewrite the
 file dozens of times. That is flash wear, and worse, a power cut mid-write could

@@ -93,11 +93,12 @@ class nimRumRxCfg:
         self._setDefault("outputChannelEnable", default=3)
         self._setDefault("logEnable", default=0)
         self._setDefault("logPath", default=self.usefulPath)
-        # WARN, not NOTE. Devices retain only ~20 MB of journal — measured about
-        # an hour on a chatty unit — so notes cost the history needed to
-        # investigate anything. Warnings are the level worth keeping on by
-        # default; set printLevel: note in rxConfig.yaml when debugging one device.
-        self._setDefault("printLevel", default="warn")
+        # NOTE by default. The per-cycle RX diagnostics that would flood the
+        # ~20 MB journal (about an hour on a chatty unit) sit at debug, so note
+        # now carries only the low-rate 'alive' heartbeat and sparse lifecycle
+        # lines — cheap enough to keep on, and it makes a synced-but-silent RX
+        # visible. Set printLevel: warn to quieten, debug for the full sync line.
+        self._setDefault("printLevel", default="note")
         self._setDefault("pcmDevName", default="default")
         self._setDefault("volumeDevName", default="default")
         self._setDefault("volumeCtrl", default="NIMRUM_SFT_VOL")
@@ -181,6 +182,45 @@ class nimRumRxCfg:
         """Return forceS16 as 0 or 1."""
         return 1 if self.get("forceS16") else 0
 
+    def _getInt(self, keyName: str, default: int) -> int:
+        """Coerce a config field to int, warning and defaulting on failure.
+
+        The numeric RX fields are passed straight into the C library via
+        ctypes, which rejects a str with a TypeError and crash-loops the RX.
+        A stray unit suffix in the YAML editor (e.g. staticDelay_us: 710us,
+        parsed by YAML as the string "710us") is enough to take a device down.
+        Coerce here so a bad value degrades to a warning, mirroring
+        getPcmMode/getPrintLevel.
+        """
+        val = self.get(keyName)
+        if isinstance(val, bool):
+            # bool is an int subclass; treat True/False as 1/0 explicitly.
+            return 1 if val else 0
+        if isinstance(val, int):
+            return val
+        try:
+            # Accept "710", "710.0" and float 710.0; reject "710us".
+            return int(str(val).strip())
+        except (TypeError, ValueError):
+            print(
+                f"WARNING: {keyName} {val!r} is not an integer "
+                f"(check for a stray unit suffix like 'us'). "
+                f"Falling back to {default}."
+            )
+            return default
+
+    def getStaticDelayUs(self) -> int:
+        """Return staticDelay_us as an int (default 0 on a bad value)."""
+        return self._getInt("staticDelay_us", 0)
+
+    def getOutputChannelEnable(self) -> int:
+        """Return outputChannelEnable as an int (default 3 = both channels)."""
+        return self._getInt("outputChannelEnable", 3)
+
+    def getLogEnable(self) -> int:
+        """Return logEnable as 0 or 1."""
+        return 1 if self._getInt("logEnable", 0) else 0
+
     def printCfg(self):
         """Print all config values."""
         print("*" * 60)
@@ -206,3 +246,56 @@ class nimRumRxCfg:
             file.close()
         except:
             print("Failed writing: " + fileName)
+
+
+# Fields passed straight into the C library via ctypes, which rejects a
+# non-integer with a TypeError and crash-loops the RX. Validated before a
+# config is pushed to a device so a bad value is rejected at save time rather
+# than taking the device down. Keep in sync with the getInt accessors above.
+_RX_INT_FIELDS = ("staticDelay_us", "outputChannelEnable", "logEnable", "forceS16")
+
+
+def _is_intlike(val) -> bool:
+    """True if val is an int or a string/float that converts cleanly to int."""
+    if isinstance(val, bool):
+        return True
+    if isinstance(val, int):
+        return True
+    try:
+        int(str(val).strip())
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def validate_rx_config_yaml(content: str):
+    """Validate rxConfig.yaml text before it is written to a device.
+
+    Returns (ok, error_message). error_message is "" when ok is True.
+
+    Catches the failure class that crash-loops an RX: valid YAML whose numeric
+    fields carry a non-integer value (e.g. staticDelay_us: 710us, which YAML
+    parses as the string "710us"). Those fields are passed straight to the C
+    library via ctypes, so a str takes the device down on every restart.
+    """
+    try:
+        parsed = yaml.load(content, Loader=Loader)
+    except yaml.YAMLError as e:
+        return False, f"YAML syntax error: {e}"
+
+    if not isinstance(parsed, dict):
+        got = type(parsed).__name__
+        return False, f"Config must be a mapping (dict), got {got}"
+
+    section = parsed.get("nimRumRXConfig")
+    if not isinstance(section, dict):
+        return False, "Missing or malformed 'nimRumRXConfig' section"
+
+    for field in _RX_INT_FIELDS:
+        if field in section and not _is_intlike(section[field]):
+            return False, (
+                f"'{field}' must be an integer, got {section[field]!r}. "
+                f"Remove any unit suffix (e.g. write 710, not 710us)."
+            )
+
+    return True, ""

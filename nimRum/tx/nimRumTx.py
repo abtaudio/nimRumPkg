@@ -80,7 +80,7 @@ class nimRumTx(nimRumPyCommon.nimRumPyCommon):
         add to the end-to-end figure (the FIFO sits upstream of TX's timestamping,
         so 100 ms configured with a 4-packet FIFO delivers ~132 ms).
 
-        Subtracting it was tried and rejected on 2026-09-09: the configured latency
+        Subtracting it was tried and rejected: the configured latency
         is the TX->RX jitter budget, sized from how good that link is, and TX
         validates it against each client's measured network minimum. Taking source
         dwell out of it would silently erode every client's margin because someone

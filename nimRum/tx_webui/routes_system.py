@@ -189,6 +189,16 @@ def api_config_device_put(name):
     filename = data.get("filename", "rxConfig.yaml")
     content = data.get("content", "")
     restart = data.get("restart", True)
+
+    # Validate RX config before pushing: a non-integer in a ctypes-bound field
+    # (e.g. staticDelay_us: 710us) is valid YAML but crash-loops the RX on
+    # restart. Reject it here rather than taking the device down.
+    if "rx" in filename.lower():
+        from nimRum.rx.nimRumRxCfg import validate_rx_config_yaml
+        ok, err = validate_rx_config_yaml(content)
+        if not ok:
+            return jsonify({"error": err}), 400
+
     result = _sys_deploy.push_device_config(name, filename, content, restart)
     if "error" in result:
         return jsonify(result), 500

@@ -56,8 +56,8 @@ SLOW_RATIO = 0.25
 
 # max/min within one run, beyond which the link is called unstable. Stepping
 # between adjacent MCS rates is normal and gives roughly 1.1, so the threshold
-# sits well above that. Measured across a fleet: a steady receiver gave 1.00
-# (eight identical samples), two others 1.11 and 1.12.
+# sits well above that. A steady receiver measures close to 1.00, while links
+# stepping between rates run a little higher.
 UNSTABLE_SPREAD = 1.5
 
 # Seconds between polls. Back-to-back polls tend to return the same value and
@@ -248,11 +248,11 @@ def collect_link_stats(hostname: str, interface: str = DEFAULT_INTERFACE,
     Link speed moves on two timescales and both are reported rather than
     smoothed away, because the movement is itself the signal:
 
-    - Within a run, rate adaptation steps between MCS rates. In one measured
-      run a receiver returned eight identical samples while another wandered
-      351-390 and a third 52-58. A link that does not sit still is worth a look.
-    - Across runs, it drifts further. One receiver read 351, 400, 468 and
-      526 Mbps within half an hour.
+    - Within a run, rate adaptation steps between MCS rates. A steady receiver
+      returns near-identical samples while others wander over a range within a
+      single run. A link that does not sit still is worth a look.
+    - Across runs, it drifts further, a receiver's reported speed moving over a
+      wide range within half an hour.
 
     So this returns min, max and spread alongside the median, and the caller is
     expected to show the range. Re-running and getting a different answer is

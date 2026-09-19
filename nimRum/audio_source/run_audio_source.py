@@ -145,10 +145,10 @@ class NimRumAudioSource:
                  target_host if target_host else "auto")
 
         # Verbosity of the C side, same names and values as rx/txConfig.yaml.
-        # The C default is WARN; this only needs to act when the config asks for
-        # something else. Set before start so startup notes are gated too.
+        # Defaults to note (matching RX/TX); warn stays the safe fallback for a
+        # malformed value. Set before start so startup notes are gated too.
         levels = {"err": 0, "warn": 1, "note": 2, "debug": 3}
-        print_level = cfg.get('printLevel', 'warn')
+        print_level = cfg.get('printLevel', 'note')
         if isinstance(print_level, str):
             resolved = levels.get(print_level.strip().lower())
             if resolved is None:

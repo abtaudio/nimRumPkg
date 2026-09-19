@@ -85,12 +85,12 @@ class nimRumTxCfg(nimRumTxRemote.nimRumTxRemote, nimRumTxLanCtrl.nimRumTxLanCtrl
         self.volume = self._getTxVal("startupVolume", default=10)
 
         # printLevel — printout verbosity, same names and values as rxConfig.yaml.
-        # Defaults to "warn" rather than the library default of "note" because TX
-        # emits a note per reply-queue event: measured 2026-09-09 at ~48000 journal
-        # lines an hour, which held TX's journal to about one hour of history and
-        # destroyed the evidence for a network outage 14 h earlier. Notes are still
-        # available by setting printLevel: note when you want them.
-        self.printLevel = self._getTxVal("printLevel", default="warn")
+        # NOTE by default. The per-reply-queue and per-cycle status detail that
+        # flooded the journal (it held TX's journal to a short window and
+        # destroyed evidence of an earlier network outage) now sits at debug, so
+        # note carries only the low-rate 'alive' heartbeat and lifecycle lines.
+        # Set printLevel: warn to quieten.
+        self.printLevel = self._getTxVal("printLevel", default="note")
         self.latency = self._getTxVal("latency_us", default=100000)
         self.logEnable = self._getTxVal("logEnable", default=0)
         defTmp = os.path.dirname(os.path.abspath(configFile))
@@ -355,7 +355,7 @@ class nimRumTxCfg(nimRumTxRemote.nimRumTxRemote, nimRumTxLanCtrl.nimRumTxLanCtrl
         The layout level is read via getLevelForLayout only. cliVolStereoAdj /
         cliVolMultiAdj are snapshots of the *same* layouts.*.level fields, kept
         for the Levels tab, so adding them here counted the layout level twice
-        (fixed 2026-09-13 — it made every EQ level calibration wrong).
+        (this was fixed — it made every EQ level calibration wrong).
         """
         level = self.getLevelForLayout(cliId, self.activeLayout)
         volCal = self.cliVolCal[cliId]

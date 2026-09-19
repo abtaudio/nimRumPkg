@@ -31,15 +31,11 @@ import os
 # that can still be one continuous measurement of the same speaker pair.
 #
 # A step larger than this means the two channels latched onto different spike
-# events, so the sample is not a measurement of anything. The populations do not
-# overlap: measured 2026-09-06 clean samples sat at 32 us p50 against 2831 us for
-# mispaired ones, and again on an identical-pair bench 2026-09-15 at 1 us p50 /
-# 6 us p99 against ~77850 us for all four bad samples in a 2706-sample run.
-# Anywhere between 200 us and several ms would separate them equally well.
-#
-# This gate lived in the analysis tools rather than here until 2026-09-15, which
-# left the printed Mean, the plot and the .npy taking the mispaired samples in.
-# On that 2706-sample run it put the running mean at -84 us against a true -26 us.
+# events, so the sample is not a measurement of anything. The clean and
+# mispaired populations are separated by orders of magnitude, so the exact
+# threshold is not critical — anywhere from a couple of hundred microseconds to
+# several milliseconds separates them equally well. Left out of the running
+# mean, a mispaired sample drags it far off the true value.
 MISPAIR_STEP_LIMIT_US = 200
 
 class NIMRUM_MEAS_SPIKES():
@@ -60,13 +56,12 @@ class NIMRUM_MEAS_SPIKES():
       dropout the window collapses towards its 20-sample floor. It also stays
       polluted for a long time after any change to levels, cabling or devices,
       and nothing in the output says how many samples it currently spans. It
-      does now exclude mispaired samples, which it did not before 2026-09-15.
+      excludes mispaired samples.
 
     * pairDist_us - how far apart the two spike indices sat inside the same
       capture buffer. Useful for spotting a gross wiring or level problem, but
       NOT a mispairing test: both indices come from one buffer, so a pair can be
-      mutually consistent and still be the wrong event. Measured 2026-09-15 it
-      read 0 on two of four known-mispaired samples.
+      mutually consistent and still be the wrong event.
 
     * N - a monotonic counter of accepted samples, for de-duplicating when a
       reader polls the log rather than following it.
@@ -74,16 +69,16 @@ class NIMRUM_MEAS_SPIKES():
     So: take synchDiffTime_us, decide your own window, and compute mean,
     median and spread yourself.
 
-    Three columns were removed on 2026-09-15, because none of them was a level
-    and their names did not say so - one of them had already produced a wrong
-    "no systematic offset" conclusion:
+    Some derived columns were removed because none of them was a level and their
+    names did not say so — one had already produced a wrong "no systematic
+    offset" conclusion:
 
     * DistanceToMean was just synchDiffTime_us - Mean.
     * Diff R/L was each channel's spike position against the expected interval.
     * (R-L=) was the FIRST DIFFERENCE of synchDiffTime_us, since both channels
       subtract the same expected_interval. Averaged over a run it goes to ~0
       whatever the offset is. It WAS the per-sample validity indicator, applied
-      by the analysis tools at a 200 us threshold - so rather than being lost it
+      by the analysis tools at a 200 us threshold — so rather than being lost it
       moved into this file as MISPAIR_STEP_LIMIT_US, which is what marks such a
       sample SUSPECT and keeps it out of the mean, the plot and the .npy.
 
@@ -96,16 +91,15 @@ class NIMRUM_MEAS_SPIKES():
                  resultFolder=None, trigPeakFrac=0.25, trigDecay=0.98,
                  quietWarn_sec=60.0, verbose=False):
         # verbose=True restores the per-candidate rejection prints. They were
-        # unconditional while the detector was being developed, and at 0.35 lines
-        # per second they came to 89 499 of 358 527 lines in one 72 h log - 25% of
-        # it, one message repeated. Every one of them is already counted in
+        # unconditional while the detector was being developed, and at fractions
+        # of a line per second they can come to a quarter of a multi-day log,
+        # one message repeated. Every one of them is already counted in
         # rejectCounts and summarised at each store, so nothing is lost by
         # default; turn this on when changing the detector itself.
         #
-        # Volume is not only a readability problem on this device. A measurement
-        # host can be as small as a Pi 2B v1.1, and one has been found with the
-        # measurement service hung at 102% CPU and a frozen log, and print storms
-        # starving a loop is a fault this project has already paid for once.
+        # Volume is not only a readability problem. A measurement host can be a
+        # very small board, and a print storm starving the capture loop is a
+        # fault this project has already paid for once.
         self.verbose = verbose
         self.capRate = capRate
 
@@ -115,12 +109,12 @@ class NIMRUM_MEAS_SPIKES():
         # truncating real measurements.
         #
         # It used to default to a fixed 250 ms and to drop the sample silently.
-        # That is a bias, not a filter: a receiver has been measured 17-24 ms
-        # out, so a fixed bound sits close enough to the signal to shape the
-        # distribution, and nothing counted what it removed. Now the sample is
-        # kept, the distance is printed, and the drops are counted. Mispairing is
-        # decided by MISPAIR_STEP_LIMIT_US instead, which separates cleanly
-        # (32 us for good pairs against 2831 us for mispaired ones).
+        # That is a bias, not a filter: a receiver can sit far enough out that a
+        # fixed bound is close enough to the signal to shape the distribution,
+        # and nothing counted what it removed. Now the sample is kept, the
+        # distance is printed, and the drops are counted. Mispairing is decided
+        # by MISPAIR_STEP_LIMIT_US instead, whose clean and mispaired populations
+        # are separated by orders of magnitude.
         self.maxDiff_us = maxDiff_us
 
         # Trigger level, relative to the peak envelope this channel has recently
@@ -131,17 +125,16 @@ class NIMRUM_MEAS_SPIKES():
         # 1. maxInt/500, a fixed fraction of full scale. Since the spike shares
         #    the volume-controlled output path with the music, turning the volume
         #    down puts the spike under the bar and every buffer becomes "just
-        #    noise" - which is how an 11 h run lost 7 h 24 m while the service
-        #    still looked healthy. (It was also *inert* whenever the caller left
-        #    maxInt at 1 while feeding int32 counts, which is why the same code
-        #    could appear to work for months.)
+        #    noise" - which is how a long run can quietly stop measuring while the
+        #    service still looks healthy. (It was also *inert* whenever the caller
+        #    left maxInt at 1 while feeding int32 counts, which is why the same
+        #    code could appear to work for months.)
         #
         # 2. peak > median(|x|) * factor, i.e. SNR against the buffer's own
-        #    "noise floor". Measured 2026-09-07 23:34: on this bench the channel
-        #    carries MUSIC as well as the spike, so the median is program
-        #    material, the spike sits only ~5x above it, and a x10 factor rejects
-        #    every buffer. The median is not a noise floor whenever anything else
-        #    is playing.
+        #    "noise floor". On this bench the channel carries MUSIC as well as
+        #    the spike, so the median is program material, the spike sits only a
+        #    few times above it, and a x10 factor rejects every buffer. The
+        #    median is not a noise floor whenever anything else is playing.
         #
         # What works is neither absolute nor content-relative but *history*
         # relative: reject a buffer only if its peak is far below the peak
@@ -157,9 +150,8 @@ class NIMRUM_MEAS_SPIKES():
         # Its ONLY job is to stop the threshold being 0 on digital silence, so it
         # has to be negligible against any real signal. Do not scale it to
         # something like maxInt/20000: callers pass maxInt as int32 full scale
-        # (2147483647) while the measured spike peaks around 86000, i.e. -88 dBFS,
-        # so anything derived from full scale rejects everything. Measured
-        # 2026-09-07 23:47 by doing exactly that.
+        # while the spike peaks far below that, so anything derived from full
+        # scale rejects everything.
         self.trigAbsFloor = max(1.0, maxInt / 1e9)
 
         self.synchDiff_X = np.array([])
@@ -183,13 +175,11 @@ class NIMRUM_MEAS_SPIKES():
         self.sampleN = 0
 
         # storeResult() renders a PDF and writes a .npy from inside the capture
-        # path, which on a Pi 2B takes long enough to starve the PortAudio
+        # path, which on a small board takes long enough to starve the PortAudio
         # callback — "Got callback status:input overflow" in the log. Samples are
         # dropped, so the very next inter-spike interval spans the gap and the
-        # pair latches onto different spike events. Measured 2026-09-10: four
-        # excursions of 490-705 ms in one hour, every one immediately after a
-        # "Stored:" line, and each drawn into the plot at full height so a
-        # +-100us real signal was compressed into a flat line at zero.
+        # pair latches onto different spike events — drawn into the plot at full
+        # height, it compresses a real signal into a flat line at zero.
         #
         # The sample after a store is therefore suspect by construction, whether
         # or not the interval test happens to catch it.
@@ -277,15 +267,15 @@ class NIMRUM_MEAS_SPIKES():
 
         # Autoscale to the bulk of the data, not to its extremes. One 0.5 s
         # excursion on an unclipped axis compresses a real +-100 us trace into a
-        # flat line at zero — which is exactly how the 2026-09-10 plot managed to
-        # hide a good result behind two bad samples. Outliers are still drawn,
-        # they just cannot dictate the scale, and the count goes in the title so
-        # nothing is silently cropped.
+        # flat line at zero — which is exactly how a plot can hide a good result
+        # behind a couple of bad samples. Outliers are still drawn, they just
+        # cannot dictate the scale, and the count goes in the title so nothing is
+        # silently cropped.
         #
         # Median +- k*IQR, not percentiles: a percentile bound is only as robust
-        # as the sample count allows, and p99 of 39 samples containing one wild
-        # value still lands on the wild value. IQR does not care how few samples
-        # there are.
+        # as the sample count allows, and a high percentile of a small sample
+        # containing one wild value still lands on the wild value. IQR does not
+        # care how few samples there are.
         y = np.asarray(self.synchDiff_Y, dtype=float)
         y = y[np.isfinite(y)]
         if y.size >= 10:
@@ -330,23 +320,23 @@ class NIMRUM_MEAS_SPIKES():
         second attempt at this bound:
 
         * The original was a fixed 250 ms that discarded silently, which
-          truncated the distribution — an arecord cross-check found the offset at
-          -298 ms for ~70% of a capture, invisible to the script.
+          truncated the distribution — an arecord cross-check found a large
+          offset for most of a capture, invisible to the script.
         * The replacement derived a bound from "half the observed spike interval"
           via median(diff(rXArr)). **That was wrong**: rXArr holds
           `(idx + frac) * time_per_sample`, a position *within the capture
           buffer*, not a point on an absolute timeline. Its consecutive
           differences are a small near-zero quantity, not the ~1 s spike
-          interval, so the bound came out tiny and rejected ~48% of all pairs
-          (2825 pairFar against 2983 accepted, 2026-09-08). Same class of bias as
-          the bug it replaced, from a misreading of what rXArr contains.
+          interval, so the bound came out tiny and rejected roughly half of all
+          pairs. Same class of bias as the bug it replaced, from a misreading of
+          what rXArr contains.
 
         Both indices necessarily come from the same capture buffer, so "is this
         one spike event" cannot be decided from their distance. It is decided from
-        the step in the measurement itself - MISPAIR_STEP_LIMIT_US in add(), which
-        separates cleanly (p50 32 us for good pairs against 2831 us for mispaired
-        ones). pairDist_us is still printed, but as a wiring/level sanity value
-        only: on 2026-09-15 it read 0 on two of four known-mispaired samples.
+        the step in the measurement itself - MISPAIR_STEP_LIMIT_US in add(), whose
+        clean and mispaired populations are separated by orders of magnitude.
+        pairDist_us is still printed, but as a wiring/level sanity value only: it
+        can read 0 even on a known-mispaired sample.
         """
         if self.maxDiff_us is None:
             return None
@@ -405,33 +395,31 @@ class NIMRUM_MEAS_SPIKES():
             # different spike events, so this sample's synchDiff is meaningless.
             # It is REPORTED, not rejected.
             #
-            # Rejecting here (which this code did until 2026-09-06) is wrong twice
-            # over. It throws the sample away irreversibly at capture time, when
-            # the same judgement can be made from the step in the measurement -
-            # and it self-perpetuates, because a rejected sample is not appended
-            # to rXArr, so the next interval spans two capture buffers and
-            # re-trips the gate. Measured effect: ~50% of samples discarded, and
+            # Rejecting here (which this code used to do) is wrong twice over. It
+            # throws the sample away irreversibly at capture time, when the same
+            # judgement can be made from the step in the measurement - and it
+            # self-perpetuates, because a rejected sample is not appended to
+            # rXArr, so the next interval spans two capture buffers and re-trips
+            # the gate. The effect was roughly half of all samples discarded, and
             # once tripped it stayed tripped until the process was restarted,
             # while still printing plausible-looking numbers.
             #
             # So the sample is still kept in rXArr/lXArr and still printed. What
-            # changed on 2026-09-15 is only that it no longer reaches the mean,
-            # the plot and the .npy: `suspect` already did that, and this gate now
-            # sets it. Nothing is discarded irreversibly - the raw value stays in
-            # the log, marked.
+            # changed is only that it no longer reaches the mean, the plot and the
+            # .npy: `suspect` already did that, and this gate now sets it. Nothing
+            # is discarded irreversibly - the raw value stays in the log, marked.
             #
             # rD - lD is the step in synchDiffTime_us since the previous accepted
             # sample: expected_interval cancels, leaving
             # (rX - lX) - (rX_prev - lX_prev). That is why it is the right
             # discriminator and pairDist_us is not - both spike indices come from
             # the same capture buffer, so a pair can be mutually consistent and
-            # still belong to the wrong event. On the 2026-09-15 bench run
-            # pairDist_us read 0 on two of the four mispaired samples.
+            # still belong to the wrong event, reading a small pairDist_us while
+            # being the wrong event.
             #
             # The two tests this replaced compared each channel's deviation
             # against expected_interval separately, so they only fired when ONE
-            # channel jumped. Both of the 2026-09-15 events moved both channels
-            # and went unflagged.
+            # channel jumped, and missed events that moved both channels.
             step_us = abs(rD - lD)
             if step_us > MISPAIR_STEP_LIMIT_US:
                 self.rejectCounts["mispair"] += 1
@@ -455,11 +443,11 @@ class NIMRUM_MEAS_SPIKES():
             self.storeGap = False
 
         # rXArr/lXArr get the sample even when it is suspect, deliberately.
-        # Withholding it here is what made the pre-2026-09-06 gate
-        # self-perpetuating: a missing entry makes the NEXT interval span two
-        # capture buffers, which re-trips the test, and once tripped it stayed
-        # tripped until the process restarted. Interval continuity must not
-        # depend on whether a sample was usable.
+        # Withholding it here is what made the earlier gate self-perpetuating: a
+        # missing entry makes the NEXT interval span two capture buffers, which
+        # re-trips the test, and once tripped it stayed tripped until the process
+        # restarted. Interval continuity must not depend on whether a sample was
+        # usable.
         self.rXArr = np.append(self.rXArr, rX_us)
         self.lXArr = np.append(self.lXArr, lX_us)
 

@@ -15,10 +15,10 @@
 
 """Tests for the mispairing gate in nimRumMeasSpikes.
 
-The gate lived in the analysis tools until 2026-09-15, which let mispaired
-samples into the running mean, the plot and the .npy — measured at -84 us
-against a true -26 us on a 2706-sample bench run. These tests pin the gate to
-this module and pin the printed format the tools parse.
+The gate used to live in the analysis tools, which let mispaired samples into
+the running mean, the plot and the .npy and pulled the reported figure well
+away from the true value. These tests pin the gate to this module and pin the
+printed format the tools parse.
 
 matplotlib, wavio and sounddevice are stubbed: the module imports them at top
 level but the capture path under test never calls them, and stubbing keeps the
@@ -139,7 +139,7 @@ def test_mispair_does_not_move_the_running_mean() -> None:
     _prime(meas)
     mean_before = float(np.mean(meas.synchDiff_Y))
 
-    meas.add(_stereo(100 + 3600, 100))          # 75 ms out, as seen on the bench
+    meas.add(_stereo(100 + 3600, 100))          # 75 ms out
 
     assert float(np.mean(meas.synchDiff_Y)) == pytest.approx(mean_before)
 
@@ -147,14 +147,14 @@ def test_mispair_does_not_move_the_running_mean() -> None:
 def test_gate_recovers_and_does_not_stay_tripped() -> None:
     """rXArr/lXArr must keep the rejected sample, or the gate self-perpetuates.
 
-    This is the 2026-09-06 bug: a withheld entry makes the next interval span
+    This is a bug that was fixed: a withheld entry makes the next interval span
     two capture buffers, which re-trips the gate and stays tripped until the
     process restarts.
 
     Note the cost of the gate being a FIRST DIFFERENCE — one mispair event
     flags two consecutive samples, the event and the return to a consistent
-    pairing. That is why the 2026-09-15 bench log showed four flagged lines for
-    two events. The third sample must be accepted again.
+    pairing. That is why two events produce four flagged lines. The third
+    sample must be accepted again.
     """
     meas = _meas()
     _prime(meas)

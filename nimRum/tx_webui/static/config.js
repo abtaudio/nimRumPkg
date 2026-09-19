@@ -117,6 +117,31 @@
     document.getElementById('device-config-save').addEventListener('click', function() {
         var name = deviceSelect.value;
         if (!name || !currentDeviceFilename) return;
+
+        // Client-side guard for the failure that crash-loops an RX: a numeric
+        // field carrying a non-integer (e.g. "staticDelay_us: 710us"). Valid
+        // YAML, but ctypes rejects the str and the device restart-loops. The
+        // server validates too; this just gives instant feedback.
+        if (/rx/i.test(currentDeviceFilename)) {
+            var intFields = ['staticDelay_us', 'outputChannelEnable',
+                             'logEnable', 'forceS16'];
+            var lines = deviceEditor.value.split('\n');
+            var badField = null, badVal = null;
+            for (var i = 0; i < lines.length && !badField; i++) {
+                var m = lines[i].match(/^\s*([A-Za-z_]+)\s*:\s*(.+?)\s*$/);
+                if (!m) continue;
+                if (intFields.indexOf(m[1]) === -1) continue;
+                var v = m[2].replace(/^["']|["']$/g, '');
+                if (!/^-?\d+$/.test(v)) { badField = m[1]; badVal = v; }
+            }
+            if (badField) {
+                deviceStatus.textContent = 'Error: ' + badField +
+                    ' must be an integer, got "' + badVal +
+                    '". Remove any unit suffix (write 710, not 710us).';
+                return;
+            }
+        }
+
         deviceStatus.textContent = 'Saving...';
 
         fetch('/api/config/device/' + encodeURIComponent(name), {
@@ -131,6 +156,9 @@
         .then(function(r) { return r.json(); })
         .then(function(d) {
             deviceStatus.textContent = d.ok ? '✓ Saved & restarting' : 'Error: ' + d.error;
+        })
+        .catch(function(e) {
+            deviceStatus.textContent = 'Error: ' + e;
         });
     });
 

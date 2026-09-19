@@ -221,7 +221,7 @@
         // point of grouping. Centre distance for a fraction f of overlap is
         // (1 - f) * 2 * rxR, and the arc between two nodes is outerR * theta.
         //
-        // It was a fixed 8 degrees until 2026-09-15 — a constant answer to a question
+        // It used to be a fixed 8 degrees — a constant answer to a question
         // that depends on canvas size — which collapsed a three-speaker group into a
         // single blob with three labels printed over each other. The labels were the
         // real problem, and they are now placed radially and staggered, so the nodes are
@@ -361,7 +361,7 @@
         cx = W / 2;
         cy = H / 2;
         // Labels sit radially OUTSIDE the ring, so the ring must leave room for them.
-        // It was a flat 0.38 until 2026-09-15, then 0.31 once labels moved out — but a
+        // It used to be a flat fraction, then was reduced once labels moved out — but a
         // fixed fraction is wrong across screen sizes, because label text is sized in
         // CSS pixels while the ring scales with the canvas. On a phone the same three
         // lines eat proportionally far more room, so the ring has to pull in and the

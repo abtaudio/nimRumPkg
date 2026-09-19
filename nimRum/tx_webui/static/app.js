@@ -177,8 +177,8 @@
          * only confirmation TX gives that it accepted a source and which build it is
          * talking to — the thing you want when the source is one you wrote yourself.
          *
-         * It is the PACKAGE version, not nimRumLib: a source links no nimRumLib. A
-         * source built before 2026-09-15 reports nothing and reads as "unknown".
+         * It is the PACKAGE version, not nimRumLib: a source links no nimRumLib. An
+         * older source reports nothing and reads as "unknown".
          */
         var srcVers = (data.seenDevices || []).filter(function(d) {
             return (d.roles & 2) !== 0;
@@ -310,15 +310,14 @@
                 html += '<span>Filter Window</span>' + val(coFiltersFull ? 'Full' : 'Filling...', false);
             }
             // Named for the quantity, not the code that produces it, and the title
-            // says what it is not. Measured 2026-09-15 on an identical pair: this
-            // number ranks the acoustic error correctly (corr +0.39, and the
-            // measured pair spread grows monotonically with it) but its SCALE is
-            // wrong by ~30x - 2 µs here was ~51 µs of real spread. It is an
+            // says what it is not. This number ranks the acoustic error correctly
+            // (the measured pair spread grows monotonically with it) but its SCALE is
+            // wrong by a large factor. It is an
             // estimator self-assessment. It is not measured playback sync, and a
             // µs figure on screen invites exactly that misreading.
             html += '<span title="Standard deviation of the receiver\'s own clock-offset estimate. Estimator self-assessment - NOT measured playback sync.">CO est stdDev</span>'
                  + val(coFiltStdDev + ' µs', coFiltStdDevBad, coFiltStdDevWarn);
-            // avgTta showed NO correlation with the acoustic error (-0.01) - it is
+            // avgTta showed NO correlation with the acoustic error - it is
             // control error against the RX's own target, so it inherits the same
             // belief the estimate does. "Timing Error" alone read as the real thing.
             if (fullDiag) html += '<span title="Moving average of |timeToAlter|: how far the playout actuator is from the receiver\'s own target. Estimator self-assessment - NOT measured playback sync.">Actuator err (est)</span>'
